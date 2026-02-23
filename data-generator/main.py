@@ -11,7 +11,7 @@ Usage:
     python main.py --full             # Full dataset (1M transactions)
     python main.py --output ./data    # Custom output directory
 
-Author: [Your Name]
+Author: Mohamed
 Project: azure-fintech-lakehouse
 """
 
