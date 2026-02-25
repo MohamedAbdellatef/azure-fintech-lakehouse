@@ -8,11 +8,8 @@ import numpy as np
 from faker import Faker
 import random
 import uuid
-from datetime import datetime, timedelta
-import os
-import sys
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from datetime import datetime
+from generators.io_utils import save_dataframe
 
 
 def generate_payment_methods(users_df: pd.DataFrame, output_dir: str = None) -> pd.DataFrame:
@@ -105,16 +102,19 @@ def generate_payment_methods(users_df: pd.DataFrame, output_dir: str = None) -> 
 
     df = pd.DataFrame(payment_methods)
 
-    os.makedirs(out_dir, exist_ok=True)
-    filepath = os.path.join(out_dir, "payment_methods.csv")
-    df.to_csv(filepath, index=False)
+    filepath = save_dataframe(
+        df=df,
+        out_dir=out_dir,
+        base_name="payment_methods",
+        output_format=config.OUTPUT_FORMAT
+    )
     print(f"   ✅ Generated {len(df):,} payment methods → {filepath}")
 
     return df
 
 
 if __name__ == "__main__":
-    from users import generate_users
+    from generators.users import generate_users
     users = generate_users(num_users=100, output_dir="test_data")
     payment_methods = generate_payment_methods(users, output_dir="test_data")
     print(f"\nSample:\n{payment_methods.head()}")

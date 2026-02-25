@@ -10,10 +10,7 @@ from faker import Faker
 import random
 import uuid
 from datetime import datetime
-import os
-import sys
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from generators.io_utils import save_dataframe
 
 # ═══════════════════════════════════════════════════════════════════════════
 # MENA REGION BUSINESS NAMES - Authentic Arabic-style business names
@@ -160,9 +157,12 @@ def generate_merchants(num_merchants: int = None, output_dir: str = None) -> pd.
 
     df = pd.DataFrame(merchants)
 
-    os.makedirs(out_dir, exist_ok=True)
-    filepath = os.path.join(out_dir, "merchants.csv")
-    df.to_csv(filepath, index=False)
+    filepath = save_dataframe(
+        df=df,
+        out_dir=out_dir,
+        base_name="merchants",
+        output_format=config.OUTPUT_FORMAT
+    )
     print(f"   ✅ Saved to {filepath}")
 
     return df

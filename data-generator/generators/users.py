@@ -10,11 +10,7 @@ from faker import Faker
 import random
 import uuid
 from datetime import datetime
-import os
-import sys
-
-# Add parent directory to path for imports
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from generators.io_utils import save_dataframe
 
 # ═══════════════════════════════════════════════════════════════════════════
 # MENA MARKET DEMOGRAPHICS - Realistic mix for UAE/KSA/Egypt
@@ -269,8 +265,8 @@ def generate_users(num_users: int = None, output_dir: str = None) -> pd.DataFram
         # Generate region-appropriate email (or null for noise)
         if random.random() > config.NULL_EMAIL_RATE:
             # Create email from Arabic name (transliterated)
-            email_first = first_name.lower().replace("-", "")
-            email_last = last_name.lower().replace("-", "").replace("al-", "al")
+            email_first = first_name.lower().replace("-", "").replace(" ", "")
+            email_last = last_name.lower().replace("-", "").replace("al-", "al").replace(" ", "")
             email_domain = random.choice(MENA_EMAIL_DOMAINS)
             # Variations: firstname.lastname, firstnamelastname, firstname123
             email_style = random.choice(['dot', 'concat', 'number'])
@@ -329,10 +325,12 @@ def generate_users(num_users: int = None, output_dir: str = None) -> pd.DataFram
 
     df = pd.DataFrame(users)
 
-    # Save to file
-    os.makedirs(out_dir, exist_ok=True)
-    filepath = os.path.join(out_dir, "users.csv")
-    df.to_csv(filepath, index=False)
+    filepath = save_dataframe(
+        df=df,
+        out_dir=out_dir,
+        base_name="users",
+        output_format=config.OUTPUT_FORMAT
+    )
     print(f"   ✅ Saved to {filepath}")
 
     return df

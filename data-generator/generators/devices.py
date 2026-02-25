@@ -10,10 +10,7 @@ import random
 import uuid
 import hashlib
 from datetime import datetime
-import os
-import sys
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from generators.io_utils import save_dataframe
 
 
 def generate_device_fingerprint() -> str:
@@ -99,16 +96,19 @@ def generate_devices(users_df: pd.DataFrame, output_dir: str = None) -> pd.DataF
 
     df = pd.DataFrame(devices)
 
-    os.makedirs(out_dir, exist_ok=True)
-    filepath = os.path.join(out_dir, "devices.csv")
-    df.to_csv(filepath, index=False)
+    filepath = save_dataframe(
+        df=df,
+        out_dir=out_dir,
+        base_name="devices",
+        output_format=config.OUTPUT_FORMAT
+    )
     print(f"   ✅ Generated {len(df):,} devices → {filepath}")
 
     return df
 
 
 if __name__ == "__main__":
-    from users import generate_users
+    from generators.users import generate_users
     users = generate_users(num_users=100, output_dir="test_data")
     devices = generate_devices(users, output_dir="test_data")
     print(f"\nSample:\n{devices.head()}")

@@ -10,9 +10,8 @@ import random
 import uuid
 from datetime import datetime, timedelta
 import os
-import sys
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import shutil
+from generators.io_utils import normalize_output_format
 
 
 def inject_fraud_patterns(transactions: list, fraud_rate: float = 0.03) -> list:
@@ -55,6 +54,7 @@ def generate_transactions(
     accounts_df: pd.DataFrame,
     merchants_df: pd.DataFrame,
     devices_df: pd.DataFrame,
+    payment_methods_df: pd.DataFrame,
     num_transactions: int = None,
     chunk_size: int = None,
     output_dir: str = None
@@ -66,6 +66,7 @@ def generate_transactions(
         accounts_df: Accounts data (for sender_account_id)
         merchants_df: Merchants data (for receiver in merchant payments)
         devices_df: Devices data (for device_id)
+        payment_methods_df: Payment methods data (for payment_method_id)
         num_transactions: Total transactions to generate
         chunk_size: Records per chunk
         output_dir: Output directory
@@ -73,6 +74,7 @@ def generate_transactions(
     total = num_transactions or config.NUM_TRANSACTIONS
     chunk_sz = chunk_size or config.CHUNK_SIZE
     out_dir = output_dir or config.OUTPUT_DIR
+    output_format = normalize_output_format(config.OUTPUT_FORMAT)
 
     fake = Faker()
     Faker.seed(config.RANDOM_SEED + 4)
@@ -90,16 +92,28 @@ def generate_transactions(
     user_devices = devices_df.groupby(
         'user_id')['device_id'].apply(list).to_dict()
     account_users = accounts_df.set_index('account_id')['user_id'].to_dict()
+    account_currencies = accounts_df.set_index('account_id')['currency'].to_dict()
+    user_payment_methods = payment_methods_df.groupby(
+        'user_id')['payment_method_id'].apply(list).to_dict()
+    all_payment_method_ids = payment_methods_df['payment_method_id'].tolist()
+
+    if not all_payment_method_ids:
+        raise ValueError("payment_methods_df is empty; cannot assign payment_method_id")
 
     # File setup
     os.makedirs(out_dir, exist_ok=True)
     filepath = os.path.join(out_dir, "transactions.csv")
+    parquet_dir = os.path.join(out_dir, "transactions_parquet")
 
-    # Clear existing file
-    if os.path.exists(filepath):
-        os.remove(filepath)
-
-    header_written = False
+    if output_format == "csv":
+        if os.path.exists(filepath):
+            os.remove(filepath)
+        header_written = False
+    else:
+        if os.path.exists(parquet_dir):
+            shutil.rmtree(parquet_dir)
+        os.makedirs(parquet_dir, exist_ok=True)
+        header_written = None
     total_generated = 0
 
     # Generate in chunks
@@ -120,9 +134,18 @@ def generate_transactions(
                 weights=config.TRANSACTION_TYPE_WEIGHTS
             )[0]
 
+            # Payment method linked to sender user for downstream adoption analysis
+            if sender_user and sender_user in user_payment_methods:
+                payment_method_id = random.choice(user_payment_methods[sender_user])
+            else:
+                payment_method_id = random.choice(all_payment_method_ids)
+
             # Receiver depends on type
             if txn_type == 'P2P_Transfer':
                 receiver = random.choice(account_ids)
+                if len(account_ids) > 1:
+                    while receiver == sender_acc:
+                        receiver = random.choice(account_ids)
                 receiver_type = 'account'
             elif txn_type == 'Merchant_Payment':
                 receiver = random.choice(merchant_ids)
@@ -140,8 +163,8 @@ def generate_transactions(
                 # Cap at 50K for normal transactions
                 amount = min(amount, 50000)
 
-            # Currency and fee
-            currency = random.choice(['EGP', 'SAR', 'AED'])
+            # Currency from sender's account (consistent with account setup)
+            currency = account_currencies.get(sender_acc, 'AED')
             fee = round(abs(amount) * random.uniform(0.01, 0.03), 2)
 
             # Timestamps
@@ -176,6 +199,7 @@ def generate_transactions(
                 "receiver_id": receiver,
                 "receiver_type": receiver_type,
                 "transaction_type": txn_type,
+                "payment_method_id": payment_method_id,
                 "amount": amount,
                 "currency": currency,
                 "fee_amount": fee,
@@ -206,22 +230,28 @@ def generate_transactions(
 
         # Convert to DataFrame and save
         df_chunk = pd.DataFrame(transactions)
-        df_chunk.to_csv(filepath, mode='a',
-                        header=not header_written, index=False)
-        header_written = True
+        if output_format == "csv":
+            df_chunk.to_csv(filepath, mode='a',
+                            header=not header_written, index=False)
+            header_written = True
+        else:
+            part_path = os.path.join(parquet_dir, f"part-{chunk_num + 1:05d}.parquet")
+            df_chunk.to_parquet(part_path, index=False)
 
         total_generated += current_chunk_size
         print(
             f"   → Chunk {chunk_num + 1}/{num_chunks} complete ({total_generated:,} transactions)")
 
-    print(f"   ✅ Generated {total_generated:,} transactions → {filepath}")
+    output_target = filepath if output_format == "csv" else parquet_dir
+    print(f"   ✅ Generated {total_generated:,} transactions → {output_target}")
 
 
 if __name__ == "__main__":
-    from users import generate_users
-    from merchants import generate_merchants
-    from accounts import generate_accounts
-    from devices import generate_devices
+    from generators.users import generate_users
+    from generators.merchants import generate_merchants
+    from generators.accounts import generate_accounts
+    from generators.devices import generate_devices
+    from generators.payment_methods import generate_payment_methods
 
     # Test with small sample
     out = "test_data"
@@ -229,16 +259,20 @@ if __name__ == "__main__":
     merchants = generate_merchants(num_merchants=20, output_dir=out)
     accounts = generate_accounts(users, output_dir=out)
     devices = generate_devices(users, output_dir=out)
+    payment_methods = generate_payment_methods(users, output_dir=out)
 
     generate_transactions(
-        accounts, merchants, devices,
+        accounts, merchants, devices, payment_methods,
         num_transactions=1000,
         chunk_size=500,
         output_dir=out
     )
 
     # Load and check
-    df = pd.read_csv(f"{out}/transactions.csv")
+    if normalize_output_format(config.OUTPUT_FORMAT) == "csv":
+        df = pd.read_csv(f"{out}/transactions.csv")
+    else:
+        df = pd.read_parquet(f"{out}/transactions_parquet/part-00001.parquet")
     print(f"\nSample:\n{df.head()}")
     print(f"\nFraud transactions: {df['is_flagged'].sum()}")
     print(f"Negative amounts: {(df['amount'] < 0).sum()}")

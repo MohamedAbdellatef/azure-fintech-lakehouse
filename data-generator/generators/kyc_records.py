@@ -9,11 +9,8 @@ from faker import Faker
 import random
 import uuid
 import hashlib
-from datetime import datetime, timedelta
-import os
-import sys
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from datetime import datetime
+from generators.io_utils import save_dataframe
 
 
 def hash_document_number(doc_num: str) -> str:
@@ -140,16 +137,19 @@ def generate_kyc_records(users_df: pd.DataFrame, output_dir: str = None) -> pd.D
 
     df = pd.DataFrame(kyc_records)
 
-    os.makedirs(out_dir, exist_ok=True)
-    filepath = os.path.join(out_dir, "kyc_records.csv")
-    df.to_csv(filepath, index=False)
+    filepath = save_dataframe(
+        df=df,
+        out_dir=out_dir,
+        base_name="kyc_records",
+        output_format=config.OUTPUT_FORMAT
+    )
     print(f"   ✅ Generated {len(df):,} KYC records → {filepath}")
 
     return df
 
 
 if __name__ == "__main__":
-    from users import generate_users
+    from generators.users import generate_users
     users = generate_users(num_users=100, output_dir="test_data")
     kyc = generate_kyc_records(users, output_dir="test_data")
     print(f"\nSample:\n{kyc.head()}")
