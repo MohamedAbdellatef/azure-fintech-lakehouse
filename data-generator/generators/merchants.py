@@ -119,13 +119,16 @@ def generate_merchants(num_merchants: int = None, output_dir: str = None) -> pd.
     np.random.seed(config.RANDOM_SEED + 1)
     random.seed(config.RANDOM_SEED + 1)
 
-    print(f"🏪 Generating {n:,} Merchants (MENA region names)...")
+    print(f"Generating {n:,} Merchants (MENA region names)...")
 
     merchants = []
 
     for i in range(n):
+        # All 5 MENA countries (matching BRD scope)
         country = random.choices(
-            ['EG', 'SA', 'AE'], weights=[0.4, 0.35, 0.25])[0]
+            ['EG', 'SA', 'AE', 'KW', 'QA'],
+            weights=[0.35, 0.30, 0.20, 0.08, 0.07]
+        )[0]
 
         # Use country-specific cities
         city = random.choice(CITIES_BY_COUNTRY.get(country, ['Unknown']))
@@ -152,7 +155,7 @@ def generate_merchants(num_merchants: int = None, output_dir: str = None) -> pd.
             "monthly_limit": random.choice([50000, 100000, 250000, 500000, 1000000]),
             "fee_percentage": round(random.uniform(1.5, 3.5), 2),
             "created_at": reg_date,
-            "updated_at": datetime.now()
+            "updated_at": fake.date_time_between(start_date=reg_date, end_date='now')
         })
 
     df = pd.DataFrame(merchants)
@@ -163,7 +166,7 @@ def generate_merchants(num_merchants: int = None, output_dir: str = None) -> pd.
         base_name="merchants",
         output_format=config.OUTPUT_FORMAT
     )
-    print(f"   ✅ Saved to {filepath}")
+    print(f"   OK Saved to {filepath}")
 
     return df
 

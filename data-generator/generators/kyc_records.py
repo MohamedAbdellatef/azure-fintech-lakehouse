@@ -36,7 +36,7 @@ def generate_kyc_records(users_df: pd.DataFrame, output_dir: str = None) -> pd.D
     Faker.seed(config.RANDOM_SEED + 6)
     random.seed(config.RANDOM_SEED + 6)
 
-    print(f"📋 Generating KYC Records...")
+    print(f"Generating KYC Records...")
 
     kyc_records = []
 
@@ -133,7 +133,7 @@ def generate_kyc_records(users_df: pd.DataFrame, output_dir: str = None) -> pd.D
         })
 
         if (idx + 1) % 10000 == 0:
-            print(f"   → {idx + 1:,} users processed...")
+            print(f"   -> {idx + 1:,} users processed...")
 
     df = pd.DataFrame(kyc_records)
 
@@ -143,7 +143,7 @@ def generate_kyc_records(users_df: pd.DataFrame, output_dir: str = None) -> pd.D
         base_name="kyc_records",
         output_format=config.OUTPUT_FORMAT
     )
-    print(f"   ✅ Generated {len(df):,} KYC records → {filepath}")
+    print(f"   OK Generated {len(df):,} KYC records -> {filepath}")
 
     return df
 

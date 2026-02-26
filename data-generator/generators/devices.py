@@ -42,7 +42,7 @@ def generate_devices(users_df: pd.DataFrame, output_dir: str = None) -> pd.DataF
     Faker.seed(config.RANDOM_SEED + 3)
     random.seed(config.RANDOM_SEED + 3)
 
-    print(f"📱 Generating Devices (1-3 per user)...")
+    print(f"Generating Devices (1-3 per user)...")
 
     devices = []
 
@@ -92,7 +92,7 @@ def generate_devices(users_df: pd.DataFrame, output_dir: str = None) -> pd.DataF
             })
 
         if (idx + 1) % 10000 == 0:
-            print(f"   → {idx + 1:,} users processed...")
+            print(f"   -> {idx + 1:,} users processed...")
 
     df = pd.DataFrame(devices)
 
@@ -102,7 +102,7 @@ def generate_devices(users_df: pd.DataFrame, output_dir: str = None) -> pd.DataF
         base_name="devices",
         output_format=config.OUTPUT_FORMAT
     )
-    print(f"   ✅ Generated {len(df):,} devices → {filepath}")
+    print(f"   OK Generated {len(df):,} devices -> {filepath}")
 
     return df
 

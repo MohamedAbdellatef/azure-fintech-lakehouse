@@ -16,20 +16,23 @@ from generators.io_utils import normalize_output_format
 
 def inject_fraud_patterns(transactions: list, fraud_rate: float = 0.03) -> list:
     """
-    Mark some transactions as fraudulent with specific patterns
-    This creates labeled data for fraud detection model
+    Mark some transactions as fraudulent with specific patterns.
+    This creates labeled data for fraud detection in the Silver layer.
 
     Fraud patterns:
-    1. velocity - many transactions in short time
-    2. amount - unusually large amounts
-    3. time - transactions at unusual hours (2-5 AM)
-    4. new_device - first transaction from new device with high amount
+    1. velocity    - Label-only: Silver layer detects >5 txns in 10 min per user
+    2. amount      - Mutates data: sets amount to 50K-200K (unusually large)
+    3. time        - Mutates data: shifts timestamp to 02:00-05:00 AM
+    4. new_device  - Label-only: Silver layer detects first txn from new device >10K
+    5. cross_border - Mutates data: changes currency to mismatch user's home country
     """
+    all_currencies = ['EGP', 'SAR', 'AED', 'KWD', 'QAR']
+
     num_fraud = int(len(transactions) * fraud_rate)
     fraud_indices = random.sample(
         range(len(transactions)), min(num_fraud, len(transactions)))
 
-    patterns = ['velocity', 'amount', 'time', 'new_device']
+    patterns = ['velocity', 'amount', 'time', 'new_device', 'cross_border']
 
     for idx in fraud_indices:
         pattern = random.choice(patterns)
@@ -46,6 +49,15 @@ def inject_fraud_patterns(transactions: list, fraud_rate: float = 0.03) -> list:
             if isinstance(original_ts, datetime):
                 suspicious_ts = original_ts.replace(hour=random.randint(2, 5))
                 transactions[idx]['transaction_timestamp'] = suspicious_ts
+        elif pattern == 'cross_border':
+            # Currency mismatch: change to a different currency than the account's
+            original_currency = transactions[idx]['currency']
+            other_currencies = [c for c in all_currencies if c != original_currency]
+            transactions[idx]['currency'] = random.choice(other_currencies)
+
+        # Note: 'velocity' and 'new_device' are label-only flags.
+        # The Silver layer will apply detection rules based on actual
+        # transaction patterns (timestamp clustering, device history).
 
     return transactions
 
@@ -81,7 +93,7 @@ def generate_transactions(
     np.random.seed(config.RANDOM_SEED + 4)
     random.seed(config.RANDOM_SEED + 4)
 
-    print(f"💳 Generating {total:,} Transactions in chunks of {chunk_sz:,}...")
+    print(f"Generating {total:,} Transactions in chunks of {chunk_sz:,}...")
 
     # Pre-load IDs for fast random selection
     account_ids = accounts_df['account_id'].tolist()
@@ -239,11 +251,10 @@ def generate_transactions(
             df_chunk.to_parquet(part_path, index=False)
 
         total_generated += current_chunk_size
-        print(
-            f"   → Chunk {chunk_num + 1}/{num_chunks} complete ({total_generated:,} transactions)")
+        print(f"   -> Chunk {chunk_num + 1}/{num_chunks} complete ({total_generated:,} transactions)")
 
     output_target = filepath if output_format == "csv" else parquet_dir
-    print(f"   ✅ Generated {total_generated:,} transactions → {output_target}")
+    print(f"   OK Generated {total_generated:,} transactions -> {output_target}")
 
 
 if __name__ == "__main__":

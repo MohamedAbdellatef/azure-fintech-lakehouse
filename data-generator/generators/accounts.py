@@ -29,7 +29,7 @@ def generate_accounts(users_df: pd.DataFrame, output_dir: str = None) -> pd.Data
     Faker.seed(config.RANDOM_SEED + 2)
     random.seed(config.RANDOM_SEED + 2)
 
-    print(f"💰 Generating Accounts (1-2 per user)...")
+    print(f"Generating Accounts (1-2 per user)...")
 
     accounts = []
 
@@ -50,7 +50,7 @@ def generate_accounts(users_df: pd.DataFrame, output_dir: str = None) -> pd.Data
             "monthly_limit": random.choice([50000, 100000, 250000]),
             "status": "active",
             "created_at": reg_date,
-            "updated_at": datetime.now()
+            "updated_at": fake.date_time_between(start_date=reg_date, end_date='now')
         })
 
         # 25% of users have a secondary savings account
@@ -65,12 +65,12 @@ def generate_accounts(users_df: pd.DataFrame, output_dir: str = None) -> pd.Data
                 "monthly_limit": random.choice([100000, 250000, 500000]),
                 "status": random.choices(["active", "frozen"], weights=[0.92, 0.08])[0],
                 "created_at": reg_date,
-                "updated_at": datetime.now()
+                "updated_at": fake.date_time_between(start_date=reg_date, end_date='now')
             })
 
         # Progress
         if (idx + 1) % 10000 == 0:
-            print(f"   → {idx + 1:,} users processed...")
+            print(f"   -> {idx + 1:,} users processed...")
 
     df = pd.DataFrame(accounts)
 
@@ -80,7 +80,7 @@ def generate_accounts(users_df: pd.DataFrame, output_dir: str = None) -> pd.Data
         base_name="accounts",
         output_format=config.OUTPUT_FORMAT
     )
-    print(f"   ✅ Generated {len(df):,} accounts → {filepath}")
+    print(f"   OK Generated {len(df):,} accounts -> {filepath}")
 
     return df
 

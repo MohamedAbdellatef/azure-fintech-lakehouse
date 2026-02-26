@@ -240,7 +240,7 @@ def generate_users(num_users: int = None, output_dir: str = None) -> pd.DataFram
     np.random.seed(config.RANDOM_SEED)
     random.seed(config.RANDOM_SEED)
 
-    print(f"📧 Generating {n:,} Users (Mixed MENA demographics)...")
+    print(f"Generating {n:,} Users (Mixed MENA demographics)...")
 
     users = []
 
@@ -279,18 +279,20 @@ def generate_users(num_users: int = None, output_dir: str = None) -> pd.DataFram
         else:
             email = None
 
-        # Intentional noise: messy phone numbers (different formats)
+        # Phone number based on user's country (with some format noise)
         if random.random() > config.NULL_PHONE_RATE:
-            phone_formats = [
-                # Egypt
-                f"+20{random.randint(10, 12)}{fake.random_number(digits=8, fix_len=True)}",
-                # KSA
-                f"+966{random.randint(50, 59)}{fake.random_number(digits=7, fix_len=True)}",
-                # UAE
-                f"+971{random.randint(50, 56)}{fake.random_number(digits=7, fix_len=True)}",
-                fake.phone_number()  # Random format
-            ]
-            phone = random.choice(phone_formats)
+            phone_formats_by_country = {
+                'EG': f"+20{random.randint(10, 12)}{fake.random_number(digits=8, fix_len=True)}",
+                'SA': f"+966{random.randint(50, 59)}{fake.random_number(digits=7, fix_len=True)}",
+                'AE': f"+971{random.randint(50, 56)}{fake.random_number(digits=7, fix_len=True)}",
+                'KW': f"+965{random.choice(['5', '6', '9'])}{fake.random_number(digits=7, fix_len=True)}",
+                'QA': f"+974{random.choice(['3', '5', '6', '7'])}{fake.random_number(digits=7, fix_len=True)}"
+            }
+            # 90% correct country format, 10% messy format (intentional DQ noise)
+            if random.random() < 0.90:
+                phone = phone_formats_by_country.get(country, fake.phone_number())
+            else:
+                phone = fake.phone_number()  # Intentional format noise
         else:
             phone = None
 
@@ -316,12 +318,12 @@ def generate_users(num_users: int = None, output_dir: str = None) -> pd.DataFram
             "is_active": random.choices([True, False], weights=[0.92, 0.08])[0],
             "registration_date": reg_date,
             "created_at": reg_date,
-            "updated_at": datetime.now()
+            "updated_at": fake.date_time_between(start_date=reg_date, end_date='now')
         })
 
         # Progress indicator
         if (i + 1) % 10000 == 0:
-            print(f"   → {i + 1:,} users generated...")
+            print(f"   -> {i + 1:,} users generated...")
 
     df = pd.DataFrame(users)
 
@@ -331,7 +333,7 @@ def generate_users(num_users: int = None, output_dir: str = None) -> pd.DataFram
         base_name="users",
         output_format=config.OUTPUT_FORMAT
     )
-    print(f"   ✅ Saved to {filepath}")
+    print(f"   OK Saved to {filepath}")
 
     return df
 

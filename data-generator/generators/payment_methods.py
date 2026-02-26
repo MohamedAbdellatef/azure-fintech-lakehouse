@@ -30,7 +30,7 @@ def generate_payment_methods(users_df: pd.DataFrame, output_dir: str = None) -> 
     Faker.seed(config.RANDOM_SEED + 5)
     random.seed(config.RANDOM_SEED + 5)
 
-    print(f"💳 Generating Payment Methods (1-3 per user)...")
+    print(f"Generating Payment Methods (1-3 per user)...")
 
     payment_methods = []
 
@@ -94,11 +94,11 @@ def generate_payment_methods(users_df: pd.DataFrame, output_dir: str = None) -> 
                 "is_active": random.choices([True, False], weights=[0.95, 0.05])[0],
                 "added_at": added_date,
                 "created_at": added_date,
-                "updated_at": datetime.now()
+                "updated_at": fake.date_time_between(start_date=added_date, end_date='now')
             })
 
         if (idx + 1) % 10000 == 0:
-            print(f"   → {idx + 1:,} users processed...")
+            print(f"   -> {idx + 1:,} users processed...")
 
     df = pd.DataFrame(payment_methods)
 
@@ -108,7 +108,7 @@ def generate_payment_methods(users_df: pd.DataFrame, output_dir: str = None) -> 
         base_name="payment_methods",
         output_format=config.OUTPUT_FORMAT
     )
-    print(f"   ✅ Generated {len(df):,} payment methods → {filepath}")
+    print(f"   OK Generated {len(df):,} payment methods -> {filepath}")
 
     return df
 
