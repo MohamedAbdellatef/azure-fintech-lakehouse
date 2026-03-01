@@ -122,7 +122,7 @@ frequency/volume are based on successful transactions.
 
 **Implementation Note:**  
 Q16 and Q17 are operational KPIs produced by Silver/Gold monitoring outputs, not raw generator files alone.  
-Planned supporting tables: `gold_refresh_audit`, `dq_quarantine`, `dq_summary`.
+Planned supporting tables: `gold_refresh_audit`, `dq_quarantine`, `dq_metrics`.
 
 ---
 
@@ -454,8 +454,8 @@ Dashboard must display:
 | Fact Table          | Grain                         | Rationale                                |
 | ------------------- | ----------------------------- | ---------------------------------------- |
 | `fact_transactions` | 1 row per transaction         | Atomic level for detailed fraud analysis |
-| `fact_user_daily_volume` | 1 row per user per day   | User activity and retention trends |
-| `fact_merchant_daily_volume` | 1 row per merchant per day | Merchant performance and reconciliation |
+| `fact_user_daily_volume` | 1 row per user per day per currency | User activity and retention trends |
+| `fact_merchant_daily_volume` | 1 row per merchant per day per currency | Merchant performance and reconciliation |
 | `fact_fraud_alerts` | 1 row per flagged transaction | Filtered fact for risk team              |
 
 ### 9.2 Conceptual Facts & Dimensions
@@ -523,3 +523,4 @@ The following items are acknowledged as important for production systems but are
 - **Data Retention Policy:** Defined as an NFR, but not technically enforced in this portfolio implementation. Planned production policy applies configurable TTL/archive controls.
 
 ---
+
