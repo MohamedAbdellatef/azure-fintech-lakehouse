@@ -13,14 +13,14 @@
 | Layer | What This File Documents | Detailed Design In |
 |---|---|---|
 | **Bronze** | Full column-level contract for all 7 raw source tables | Generator code (`data-generator/`) |
-| **Silver** | Transformation guarantees (dedup, UTC, DQ) — not column-level | `docs/05-data-quality.md` |
+| **Silver** | Transformation guarantees (dedup, UTC, DQ) - not column-level | `docs/05-data-quality.md` |
 | **Gold** | Full column-level contract for 4 facts + 7 dimensions | `docs/06-data-model.md` |
 
 ---
 
 ## 2) Source Table Summary (Bronze)
 
-| Table | PK | Row Count | Columns | Intentional Noise | BRD Usage |
+| Table | Primary Key / ID | Row Count | Columns | Intentional Noise | BRD Usage |
 |---|---|---:|---:|---|---|
 | `users` | `user_id` | 50,000 | 16 | email NULL ~5%, phone NULL ~3% | Q3, Q9-Q12, KPI-08, KPI-09 |
 | `merchants` | `merchant_id` | 2,000 | 14 | None | Q1, Q8, KPI-01, KPI-02 |
@@ -28,7 +28,7 @@
 | `devices` | `device_id` | 82,630 | 11 | None | Q5, Q13-Q15, KPI-06 |
 | `payment_methods` | `payment_method_id` | 85,185 | 12 | last_four_digits NULL ~15%, expiry NULL ~40% | Q2, KPI-04, KPI-10 |
 | `kyc_records` | `kyc_id` | 50,000 | 14 | document_number_hash NULL ~2%, many conditional NULLs | Q7, KPI-09 |
-| `transactions` | `transaction_id` | 1,010,000 | 20 | Dup PKs ~1%, negative amounts ~2%, bad timestamps ~1% | All KPIs, Q1-Q15 |
+| `transactions` | `transaction_id` (not unique in Bronze) | 1,010,000 | 20 | Duplicate IDs ~1%, negative amounts ~2%, bad timestamps ~1% | All KPIs, Q1-Q15 |
 
 ---
 
@@ -56,7 +56,7 @@
 | `updated_at` | TIMESTAMP | No | Last update | SCD2 trigger: changes when `kyc_status`, `user_tier`, or `is_active` change |
 
 **FK relationships:** None (root entity)
-**Gold target:** `dim_user` (SCD Type 2 — tracks `kyc_status`, `user_tier`, `is_active`)
+**Gold target:** `dim_user` (SCD Type 2 - tracks `kyc_status`, `user_tier`, `is_active`)
 **Dropped in Gold:** `phone_number`, `date_of_birth`, `gender` (PII / no BRD use), `created_at`, `updated_at` (audit only)
 
 ---
@@ -81,7 +81,7 @@
 | `updated_at` | TIMESTAMP | No | Last update | SCD2 trigger: changes when `risk_score`, `is_active`, or `is_verified` change |
 
 **FK relationships:** None (root entity)
-**Gold target:** `dim_merchant` (SCD Type 2 — tracks `risk_score`, `is_active`, `is_verified`)
+**Gold target:** `dim_merchant` (SCD Type 2 - tracks `risk_score`, `is_active`, `is_verified`)
 **Dropped in Gold:** `created_at`, `updated_at` (audit only)
 
 ---
@@ -165,7 +165,7 @@
 | `document_number_hash` | STRING | **Yes** | SHA-256 hashed doc number | **NULL ~2%** (intentional noise) |
 | `document_country` | STRING | No | Issuing country | Matches `users.country` |
 | `verification_status` | STRING | No | Verification result | `verified`, `pending`, `rejected` (mirrors `users.kyc_status`) |
-| `rejection_reason` | STRING | **Yes** | Rejection reason | **NULL ~95%** — only populated when `rejected`: `document_expired`, `document_unclear`, `face_mismatch`, `information_mismatch`, `suspected_fraud`, `incomplete_documents` |
+| `rejection_reason` | STRING | **Yes** | Rejection reason | **NULL ~95%** - only populated when `rejected`: `document_expired`, `document_unclear`, `face_mismatch`, `information_mismatch`, `suspected_fraud`, `incomplete_documents` |
 | `verification_attempts` | INTEGER | No | Number of attempts | 1-4 (higher for rejected) |
 | `submitted_at` | TIMESTAMP | No | Submission time | After user's `registration_date` |
 | `verified_at` | TIMESTAMP | **Yes** | Completion time | **NULL ~15%** (NULL when `pending`) |
@@ -175,7 +175,7 @@
 | `updated_at` | TIMESTAMP | No | Last update | `verified_at` or `submitted_at` |
 
 **FK relationships:** `user_id` -> `users.user_id` (one-to-one; 1 KYC record per user)
-**Gold target:** Not promoted to Gold — KYC status is tracked via `dim_user.kyc_status`. Document-level detail stays in Bronze/Silver for audit.
+**Gold target:** Not promoted to Gold - KYC status is tracked via `dim_user.kyc_status`. Document-level detail stays in Bronze/Silver for audit.
 
 ---
 
@@ -183,14 +183,14 @@
 
 | Column | Type | Nullable | Description | Allowed Values / Notes |
 |---|---|---|---|---|
-| `transaction_id` | STRING (UUID) | No | Primary key | **Duplicate PKs ~1%** (10,000 dups — intentional noise for Silver dedup) |
+| `transaction_id` | STRING (UUID) | No | Business transaction identifier | **Duplicate IDs ~1%** (10,000 dups - intentional noise for Silver dedup; uniqueness enforced in Silver) |
 | `sender_account_id` | STRING (UUID) | No | Sender account | FK -> `accounts.account_id` |
 | `receiver_id` | STRING (UUID) | **Yes** | Receiver account or merchant | **NULL ~40%** (NULL when `receiver_type = 'self'`: Deposits, Withdrawals) |
 | `receiver_type` | STRING | No | Receiver entity type | `self` (40%), `merchant` (35%), `account` (25%) |
 | `transaction_type` | STRING | No | Transaction type | `P2P_Transfer`, `Merchant_Payment`, `Deposit`, `Withdrawal`, `Bill_Payment` |
 | `payment_method_id` | STRING (UUID) | No | Payment method used | FK -> `payment_methods.payment_method_id` |
-| `amount` | DECIMAL(15,2) | No | Principal amount | **Negative values ~2%** (20,115 rows — intentional noise for DQ quarantine) |
-| `currency` | STRING | No | Transaction currency | From sender account: `EGP`, `SAR`, `AED`, `KWD`, `QAR` |
+| `amount` | DECIMAL(15,2) | No | Principal amount | **Negative values ~2%** (20,115 rows - intentional noise for DQ quarantine) |
+| `currency` | STRING | No | Transaction currency | Normally from sender account: `EGP`, `SAR`, `AED`, `KWD`, `QAR`; may be intentionally mismatched for `cross_border` fraud injection |
 | `fee_amount` | DECIMAL(15,2) | No | Fee charged | Non-negative |
 | `status` | STRING | No | Transaction outcome | `Success` (85%), `Failed` (8%), `Pending` (5%), `Reversed` (2%) |
 | `device_id` | STRING (UUID) | No | Device used | FK -> `devices.device_id` |
@@ -198,10 +198,10 @@
 | `latitude` | DECIMAL(10,6) | No | Transaction latitude | MENA bounds (22.0-32.0) |
 | `longitude` | DECIMAL(10,6) | No | Transaction longitude | MENA bounds (29.0-56.0) |
 | `transaction_timestamp` | TIMESTAMP | No | Initiated timestamp | Last ~1 year of historical data |
-| `completed_timestamp` | TIMESTAMP | No | Completed timestamp | **Invalid ordering ~1%** (11,044 rows where completed < initiated — intentional noise) |
+| `completed_timestamp` | TIMESTAMP | No | Completed timestamp | **Invalid ordering ~1%** (11,044 rows where completed < initiated - intentional noise) |
 | `risk_score` | DECIMAL(4,3) | No | Risk score | 0.000 to 1.000 |
 | `is_flagged` | BOOLEAN | No | Fraud flag | ~3% flagged |
-| `fraud_pattern` | STRING | **Yes** | Detected fraud pattern | **NULL ~97%** — only populated when `is_flagged = True`: `velocity`, `amount`, `time`, `new_device`, `cross_border` |
+| `fraud_pattern` | STRING | **Yes** | Detected fraud pattern | **NULL ~97%** - only populated when `is_flagged = True`: `velocity`, `amount`, `time`, `new_device`, `cross_border` |
 | `created_at` | TIMESTAMP | No | Record creation | Equals `transaction_timestamp` |
 
 **FK relationships:**
@@ -221,7 +221,7 @@
 
 | Noise Type | Table | Column(s) | Rate | Silver Action |
 |---|---|---|---|---|
-| Duplicate PKs | `transactions` | `transaction_id` | ~1% (10,000 rows) | Dedup — keep row with earliest `transaction_timestamp` |
+| Duplicate transaction IDs | `transactions` | `transaction_id` | ~1% (10,000 rows) | Dedup - keep row with earliest `transaction_timestamp` |
 | Negative amounts | `transactions` | `amount` | ~2% (20,115 rows) | Quarantine to `dq_quarantine` |
 | Invalid timestamp order | `transactions` | `completed < transaction` | ~1% (11,044 rows) | Set `completed_timestamp` to NULL (row is otherwise valid) |
 | NULL emails | `users` | `email` | ~5% (2,535 rows) | Pass through (nullable field) |
@@ -283,21 +283,21 @@
 
 ## 7) FK Relationship Map
 
-```
+```text
 users (50K)
-  ├── accounts (62K)         user_id -> users.user_id      [1:N]
-  ├── devices (83K)          user_id -> users.user_id      [1:N]
-  ├── payment_methods (85K)  user_id -> users.user_id      [1:N]
-  └── kyc_records (50K)      user_id -> users.user_id      [1:1]
+  |- accounts (62K)         user_id -> users.user_id      [1:N]
+  |- devices (83K)          user_id -> users.user_id      [1:N]
+  |- payment_methods (85K)  user_id -> users.user_id      [1:N]
+  `- kyc_records (50K)      user_id -> users.user_id      [1:1]
 
 transactions (1M)
-  ├── sender_account_id -> accounts.account_id             [N:1]
-  ├── receiver_id -> accounts.account_id (when account)    [N:1]
-  ├── receiver_id -> merchants.merchant_id (when merchant) [N:1]
-  ├── payment_method_id -> payment_methods.payment_method_id [N:1]
-  └── device_id -> devices.device_id                       [N:1]
+  |- sender_account_id -> accounts.account_id                [N:1]
+  |- receiver_id -> accounts.account_id (when account)       [N:1]
+  |- receiver_id -> merchants.merchant_id (when merchant)    [N:1]
+  |- payment_method_id -> payment_methods.payment_method_id  [N:1]
+  `- device_id -> devices.device_id                          [N:1]
 
-merchants (2K) — standalone entity, referenced by transactions
+merchants (2K) - standalone entity, referenced by transactions
 ```
 
 ---
@@ -307,7 +307,7 @@ merchants (2K) — standalone entity, referenced by transactions
 | Pattern | Meaning | Examples |
 |---|---|---|
 | `*_id` | Natural/business identifier (UUID) | `user_id`, `transaction_id` |
-| `*_sk` | Surrogate key (MD5 hash) — Gold only | `user_sk`, `date_sk` |
+| `*_sk` | Surrogate key (MD5 hash) - Gold only | `user_sk`, `date_sk` |
 | `*_at` | Timestamp column | `created_at`, `first_seen_at` |
 | `*_date` | Date-only column | `registration_date`, `transaction_date` |
 | `is_*` | Boolean flag | `is_active`, `is_flagged`, `is_current` |
@@ -319,8 +319,8 @@ merchants (2K) — standalone entity, referenced by transactions
 
 ## 9) Notes
 
-1. **Bronze** stores raw generator output as-is — timestamps are naive (no timezone), PKs may contain duplicates, amounts may be negative.
+1. **Bronze** stores raw generator output as-is - timestamps are naive (no timezone), some business IDs (notably `transactions.transaction_id`) may contain duplicates, and amounts may be negative.
 2. **Silver** normalizes all timestamps to UTC, deduplicates, quarantines invalid records and applies safe corrections where defined (e.g., invalid completed timestamp), and casts types. No new business columns are added.
 3. **Gold** adds surrogate keys, resolves SCD2 dimensions via point-in-time (as-of) joins, computes aggregations, and drops PII/audit columns.
-4. `kyc_records` flows through Bronze and Silver but is **not promoted to Gold** — KYC status is tracked via `dim_user.kyc_status` (SCD2).
+4. `kyc_records` flows through Bronze and Silver but is **not promoted to Gold** - KYC status is tracked via `dim_user.kyc_status` (SCD2).
 5. All monetary values remain in original transaction currency throughout all layers (no conversion).
