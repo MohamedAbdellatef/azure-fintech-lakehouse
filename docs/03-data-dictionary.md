@@ -139,7 +139,7 @@
 | `user_id` | STRING (UUID) | No | Owner user | FK -> `users.user_id` |
 | `method_type` | STRING | No | Method type | `debit_card`, `credit_card`, `bank_account`, `wallet_balance` |
 | `provider` | STRING | No | Provider/network | `visa`, `mastercard`, `amex`, `mada`, `meeza`, `knet`, `internal_wallet`, `Bank_<country>_<n>` |
-| `last_four_digits` | STRING | **Yes** | Last 4 digits of card | **NULL ~15%** (NULL for `wallet_balance` and `bank_account`) |
+| `last_four_digits` | STRING | **Yes** | Last 4 digits of card/account | NULL for `wallet_balance`; required 4 digits for `debit_card`, `credit_card`, and `bank_account` |
 | `expiry_date` | DATE | **Yes** | Card expiration | **NULL ~40%** (NULL for `bank_account` and `wallet_balance`) |
 | `is_default` | BOOLEAN | No | Default method flag | First method per user = True |
 | `is_verified` | BOOLEAN | No | Verification status | `True`, `False` |
@@ -185,7 +185,7 @@
 |---|---|---|---|---|
 | `transaction_id` | STRING (UUID) | No | Business transaction identifier | **Duplicate IDs ~1%** (10,000 dups - intentional noise for Silver dedup; uniqueness enforced in Silver) |
 | `sender_account_id` | STRING (UUID) | No | Sender account | FK -> `accounts.account_id` |
-| `receiver_id` | STRING (UUID) | **Yes** | Receiver account or merchant | **NULL ~40%** (NULL when `receiver_type = 'self'`: Deposits, Withdrawals) |
+| `receiver_id` | STRING (UUID) | **Yes** | Receiver account or merchant | **NULL when `receiver_type = 'self'` for `Deposit`, `Withdrawal`, and `Bill_Payment`** |
 | `receiver_type` | STRING | No | Receiver entity type | `self` (40%), `merchant` (35%), `account` (25%) |
 | `transaction_type` | STRING | No | Transaction type | `P2P_Transfer`, `Merchant_Payment`, `Deposit`, `Withdrawal`, `Bill_Payment` |
 | `payment_method_id` | STRING (UUID) | No | Payment method used | FK -> `payment_methods.payment_method_id` |
