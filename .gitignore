@@ -211,3 +211,7 @@ raw_data/
 *.csv
 test_data/
 __pycache__/
+
+# Keep commit-friendly sample outputs tracked
+!data-generator/output_sample/
+!data-generator/output_sample/*.csv

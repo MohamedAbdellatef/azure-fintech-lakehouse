@@ -1,0 +1,101 @@
+merchant_id,merchant_name,merchant_category,business_type,country,city,registration_date,is_verified,is_active,risk_score,monthly_limit,fee_percentage,created_at,updated_at
+e47581f5-eb02-4d23-8cf2-5604a6950b01,Abdullah Trading,Food & Beverage,company,EG,Luxor,2021-07-02,True,True,0.018,500000,2.65,2021-07-02 03:57:02,2023-12-07 23:55:59
+171accdf-4ddb-488a-a670-de30a9ac3567,FastCash MENA,Food & Beverage,company,SA,Buraidah,2022-05-25,True,True,0.141,1000000,3.17,2022-05-25 13:45:19,2024-05-13 02:12:27
+f0591dba-0635-4018-b1fd-4bd8fa7be5f8,Hayat Tech,Healthcare,individual,EG,Mansoura,2024-04-26,True,True,0.021,50000,3.18,2024-04-26 13:21:27,2025-09-30 05:45:38
+ac90c6fd-1fe8-465a-a1d4-7a3c6a7bf929,Markaz Majd WLL,Retail,individual,EG,Alexandria,2021-12-28,True,True,0.041,250000,2.16,2021-12-28 12:48:11,2023-12-02 12:55:19
+e402c0f4-ae11-466e-9231-19bde065d01e,Al-Ghamdi Group,Gaming,individual,AE,Umm Al Quwain,2025-05-30,True,True,0.059,100000,2.84,2025-05-30 11:11:13,2026-01-21 23:22:10
+0247d843-6c78-4e2a-8f9d-f1c687c5175a,Abu Ras Al Khaimah House,Healthcare,individual,EG,Aswan,2021-05-02,False,True,0.294,50000,2.22,2021-05-02 21:46:28,2025-09-16 02:14:55
+69d9999c-d6ae-4a9f-8424-10c76515746b,Faisal Trading,Food & Beverage,company,SA,Abha,2024-11-06,True,True,0.165,100000,1.51,2024-11-06 18:33:55,2026-01-28 15:32:42
+fee5d57a-4b12-47a8-a123-ebef38eb20e6,Al-Rashid Trading,Food & Beverage,company,KW,Kuwait City,2024-05-04,True,False,0.117,500000,3.19,2024-05-04 07:35:07,2025-09-01 09:17:36
+03aae754-4061-4f7b-93cf-380811546357,Souq Pharaoh Enterprises,Travel,company,KW,Farwaniya,2025-10-28,True,True,0.004,1000000,2.31,2025-10-28 19:23:33,2026-01-21 02:17:47
+5eb305c0-b3b5-4148-9b71-0cfac80c5f1c,Palm House,Retail,individual,SA,Taif,2024-07-10,True,True,0.198,50000,2.84,2024-07-10 07:16:11,2024-11-24 03:39:14
+0bfab2d6-b6b0-4a7a-94e0-0b8168f60193,Riyadh Digital,Healthcare,company,QA,Al Wakrah,2021-08-30,True,True,0.075,1000000,1.62,2021-08-30 17:05:28,2022-07-30 02:17:00
+fc0f01a1-38d9-4701-ac85-f31824cfe530,Beit Dubai Plus,Travel,individual,EG,Aswan,2022-03-26,True,True,0.243,50000,1.72,2022-03-26 08:34:19,2023-10-31 05:35:04
+410a95d9-8b8c-4975-916e-751db4d567d9,QuickTransfer Middle East,Food & Beverage,individual,EG,Ismailia,2022-06-24,True,True,0.044,250000,2.58,2022-06-24 04:42:50,2022-11-19 22:16:33
+a6043692-735f-4120-bbf8-1a10ad974931,Ibrahim Enterprises,Retail,individual,SA,Makkah,2022-07-16,True,False,0.009,50000,2.46,2022-07-16 09:41:03,2024-09-19 10:28:19
+ef7c161a-be14-47f9-8f14-3e3eaf1c27a1,Al-Rashid LLC,Travel,company,EG,Suez,2025-05-23,True,True,0.302,500000,2.1,2025-05-23 08:03:38,2025-07-12 07:40:16
+48183920-4251-4e50-9e36-668eb638d354,Amal Mart,Healthcare,company,SA,Tabuk,2024-06-18,True,True,0.037,100000,2.73,2024-06-18 07:04:42,2025-09-25 04:00:30
+5958c5f8-4290-4d20-b6c2-6ad92dde8a77,Souq Luxor WLL,Food & Beverage,enterprise,AE,Sharjah,2025-06-25,False,True,0.078,100000,2.72,2025-06-25 13:49:07,2025-10-09 04:26:45
+85b0c90b-75b2-486d-8e12-45df3b75ade5,Sinai Mart,Education,company,AE,Dubai,2026-01-24,True,True,0.057,250000,2.5,2026-01-24 08:16:29,2026-02-02 04:07:59
+006c3fbf-e153-4f1f-8615-c09e13f9e4dc,Jubail House,Food & Beverage,company,EG,Suez,2024-05-18,True,True,0.012,250000,3.17,2024-05-18 10:53:45,2024-07-06 19:12:40
+14ce407a-52a6-47f6-a537-b94f11223a8a,Al-Nahyan Trading,Healthcare,individual,EG,Tanta,2021-08-03,True,True,0.278,50000,3.4,2021-08-03 09:02:13,2022-02-09 13:14:09
+09c99cfc-7534-49b9-b6d0-99c06929646f,Ibrahim Enterprises,Utilities,company,EG,Giza,2022-10-05,True,True,0.284,100000,2.02,2022-10-05 04:39:58,2023-01-08 14:09:18
+2221de0b-cddd-4d07-82ca-1bfe036129f6,Hassan Group,Gaming,individual,SA,Buraidah,2022-08-01,True,True,0.533,250000,1.69,2022-08-01 06:45:08,2023-11-04 08:23:21
+758369d2-7452-4d1c-a034-821a5dd4a4a9,PayTransfer,Education,company,SA,Buraidah,2023-07-07,True,True,0.073,50000,1.52,2023-07-07 15:38:06,2023-11-04 08:04:41
+8f282c70-7fe4-4ffd-84be-c9c87cdd45db,Abu Luxor Digital,Education,company,AE,Umm Al Quwain,2025-08-12,True,True,0.463,500000,1.79,2025-08-12 23:18:09,2025-09-21 23:42:41
+87e45cae-2388-4608-a928-4e4db7e7a8f8,Abu Jubail Group,Food & Beverage,enterprise,EG,Cairo,2026-02-21,True,True,0.089,250000,1.91,2026-02-21 23:37:44,2026-03-01 22:06:59
+9cd96882-e6eb-408d-b156-08e5e961f8be,PayPay MENA,Travel,enterprise,KW,Farwaniya,2021-09-10,False,True,0.166,100000,1.59,2021-09-10 00:43:57,2022-06-29 09:14:26
+0834f69c-529e-4e1b-a1b5-b0a394763e2b,Abu Nile Enterprises,Travel,individual,SA,Jeddah,2025-01-23,True,True,0.013,100000,2.75,2025-01-23 13:06:16,2025-10-07 20:31:04
+eaa5cc34-e425-4247-94a7-fc5dd2e6a70b,DigiWallet Middle East,Gaming,company,EG,Ismailia,2023-12-25,True,True,0.341,500000,2.77,2023-12-25 05:29:50,2025-11-05 20:44:46
+af149a36-91a9-4321-922e-791706d6fa39,Abdullah Group,Utilities,company,KW,Kuwait City,2022-08-04,True,True,0.053,500000,1.71,2022-08-04 16:11:31,2023-02-16 22:24:57
+3cec2efc-b964-404f-a6ca-23c826b8ccdd,QuickTransfer MENA,Travel,company,EG,Port Said,2021-11-08,True,True,0.046,50000,3.33,2021-11-08 09:50:48,2024-07-28 04:37:51
+6822821f-b4be-4af9-adb4-b63b2b631d6e,Markaz Creek Group,Food & Beverage,individual,SA,Abha,2021-08-07,True,True,0.001,500000,3.12,2021-08-07 00:50:18,2023-11-18 01:50:22
+ca56e9fd-03fe-42c1-92af-baeeb94dc220,Emirates Pro,Healthcare,company,QA,Al Khor,2024-04-20,True,True,0.118,50000,2.73,2024-04-20 21:16:20,2025-11-07 13:33:00
+1deefe8d-bb74-4d9f-bc83-d3d96f397535,Qassim Est.,E-commerce,individual,EG,Mansoura,2022-10-03,True,True,0.097,500000,2.11,2022-10-03 07:04:40,2025-08-12 00:38:54
+65c1a0db-c054-45bc-8e13-d70b8703abe4,Abu Pharaoh Digital,Food & Beverage,company,EG,Suez,2021-10-08,True,True,0.152,50000,2.49,2021-10-08 23:04:34,2022-09-25 23:28:33
+a4cead88-2be1-481e-a38e-aabb94d82d6a,Dar Creek Store,Education,individual,SA,Makkah,2023-09-13,True,True,0.574,250000,2.49,2023-09-13 03:41:53,2025-10-20 23:57:19
+34dcca53-7ba6-4f48-ad38-e8c2fc22fbc2,Taif Solutions,Education,company,SA,Khobar,2024-03-31,False,True,0.359,500000,3.06,2024-03-31 18:04:27,2025-10-08 05:57:37
+45219948-1273-413b-bfa6-31675bf60076,Souq Misr Tech,E-commerce,individual,KW,Kuwait City,2024-11-11,True,True,0.361,250000,1.81,2024-11-11 18:12:38,2024-12-13 20:54:00
+c86df01d-8129-4019-a8a7-7e9dedea19a9,SmartPay Arabia,Travel,company,SA,Tabuk,2025-03-13,True,True,0.112,50000,2.63,2025-03-13 03:26:18,2025-08-21 06:48:46
+5db60bba-6459-476e-b6dc-e3e4a849abda,Abu Sphinx Solutions,Education,enterprise,SA,Makkah,2021-11-19,True,True,0.016,100000,1.56,2021-11-19 06:34:17,2024-12-05 22:01:09
+a4128827-c67a-4e23-9cd4-95729184d18b,Aswan Co.,Education,enterprise,AE,Al Ain,2022-04-03,True,False,0.03,50000,2.26,2022-04-03 10:48:35,2024-12-30 08:50:52
+978d5f5f-d17f-422d-b44d-81f03dab9b1f,Ahmed LLC,Gaming,company,SA,Jubail,2021-11-27,True,True,0.459,250000,3.14,2021-11-27 06:55:37,2023-03-21 01:47:33
+552ae003-e69e-4988-b2b6-d3f0278611de,Markaz Cleopatra Services,Utilities,company,AE,Umm Al Quwain,2026-01-21,True,True,0.08,500000,1.8,2026-01-21 00:36:39,2026-03-01 05:22:49
+bbb210da-0888-425b-a434-b9356ab26464,Khobar Co.,Retail,individual,QA,Mesaieed,2023-10-15,True,True,0.3,250000,1.68,2023-10-15 19:54:07,2024-04-02 01:30:29
+4de5f6c2-daf1-4944-88c6-b10ea8a7fce7,Dar Jubail Pro,Utilities,individual,SA,Tabuk,2025-09-22,True,True,0.167,500000,3.25,2025-09-22 03:53:07,2025-12-13 15:20:12
+823bc864-465d-4cc1-af56-2218635863d4,Najd Mart,Food & Beverage,individual,EG,Shubra El Kheima,2024-12-09,False,True,0.149,250000,1.75,2024-12-09 23:30:24,2025-01-08 11:23:37
+7804ae23-7be4-449f-81f3-e0791df0b70e,Jeddah Pro,Retail,company,EG,Port Said,2022-06-02,True,True,0.048,250000,3.33,2022-06-02 18:10:15,2022-06-06 16:06:12
+2a12c615-6330-4119-ac68-df6df5ece1ba,E-Pay Gulf,Utilities,enterprise,EG,Tanta,2022-01-26,False,True,0.341,1000000,2.35,2022-01-26 23:03:33,2025-11-30 13:06:29
+1b6b8385-5b39-470e-8759-a6122037b6c4,Al-Otaibi Trading,Retail,company,EG,Aswan,2022-03-25,True,True,0.035,500000,2.75,2022-03-25 15:16:30,2022-10-07 10:09:58
+724c475b-01f3-4e5c-a328-f9209efdda6d,Giza Store,E-commerce,individual,AE,Ras Al Khaimah,2021-04-26,False,True,0.078,500000,2.64,2021-04-26 08:48:10,2024-03-10 09:08:32
+d8790781-a1f9-4bca-9076-99e358a97665,El Luxor Center,E-commerce,individual,EG,Zagazig,2022-03-07,True,False,0.757,100000,2.98,2022-03-07 16:23:01,2025-03-25 22:29:00
+5659ef9c-f874-4915-82c0-f1a5aafc2b73,Sinai Trading,Education,individual,AE,Abu Dhabi,2025-09-13,True,True,0.2,250000,1.84,2025-09-13 07:42:52,2025-12-19 01:04:53
+5368c01a-7f37-4a96-a017-42cca9eba746,Al Ajman WLL,Retail,company,SA,Tabuk,2023-05-18,False,True,0.088,1000000,3.0,2023-05-18 00:42:48,2025-04-25 18:22:05
+1f90f06f-c9e3-4668-8aa3-38cc98bec3c1,Al-Maktoum Enterprises,E-commerce,enterprise,AE,Al Ain,2024-01-24,True,True,0.123,1000000,2.65,2024-01-24 18:24:23,2025-11-20 13:59:08
+45f55d59-c2a6-4066-974b-a55a27cea626,Abu Taif House,Utilities,company,AE,Fujairah,2024-06-14,True,False,0.079,1000000,2.7,2024-06-14 09:21:30,2024-08-21 01:53:21
+ef285a45-675b-4670-981c-56814eb1619f,Al-Rashid Est.,Healthcare,individual,EG,Ismailia,2021-06-16,True,False,0.195,100000,2.53,2021-06-16 04:28:40,2022-03-31 23:33:13
+9bc4b720-b88f-49bf-a7a8-45de647252f5,FastSend Gulf,Utilities,enterprise,SA,Madinah,2022-12-04,True,True,0.076,100000,1.99,2022-12-04 16:47:02,2025-10-14 02:05:35
+a4417b58-8452-4bf0-8f98-5b2c0ecd9e4b,El Dammam Plus,Education,company,EG,Alexandria,2024-08-12,True,True,0.166,250000,1.64,2024-08-12 14:58:26,2025-01-10 07:10:43
+4348e2bc-112c-4ed4-8ed7-51087560552a,Souq Majd Express,E-commerce,company,EG,Port Said,2026-01-25,True,True,0.183,500000,3.38,2026-01-25 19:27:58,2026-02-14 09:32:02
+0ced591b-930e-48ff-8995-5df807ce0a36,El Jubail LLC,Education,individual,QA,Doha,2023-05-22,True,True,0.141,250000,1.66,2023-05-22 04:14:20,2025-11-30 07:33:00
+41f3f32c-a73e-4214-b574-1b1699ad39c2,Raha Digital,E-commerce,company,AE,Ajman,2026-02-28,True,True,0.116,500000,1.57,2026-02-28 00:47:21,2026-03-02 12:18:38
+e8ab70f9-59bb-480d-9f4e-c07eca257b5e,Creek Solutions,Food & Beverage,individual,EG,Tanta,2023-12-16,True,True,0.035,100000,2.31,2023-12-16 10:17:29,2025-08-25 13:30:11
+705e379e-8b11-4e87-848c-76cf1ffde859,Burj Digital,Utilities,individual,AE,Sharjah,2024-02-15,True,True,0.033,500000,3.03,2024-02-15 11:17:04,2024-03-26 17:40:48
+028323c4-31b8-4975-9ad3-8814822c57ef,DigiCoin Arabia,Utilities,company,EG,Cairo,2022-10-02,True,True,0.238,50000,1.59,2022-10-02 15:54:08,2025-01-14 18:26:48
+4d5894b1-b7d4-452d-a1ee-99e7bb50696c,Al-Ghamdi LLC,E-commerce,company,SA,Khobar,2022-09-07,True,True,0.051,50000,2.05,2022-09-07 21:19:05,2026-01-06 14:37:41
+5466a7b6-96bc-4455-8f29-9a622bb5f8c8,Faisal LLC,Travel,enterprise,EG,Suez,2022-10-08,True,True,0.16,1000000,3.19,2022-10-08 17:12:21,2025-10-09 18:38:59
+c8222ba3-20e3-423b-a1c1-ede0ffd647c7,Beit Burj Mart,E-commerce,company,SA,Jubail,2021-08-10,True,True,0.053,100000,3.48,2021-08-10 03:24:53,2023-08-05 08:52:43
+c33e3bd1-b853-44d5-b037-1c5d186792a1,E-Transfer MENA,Retail,company,KW,Salmiya,2023-09-22,True,True,0.023,500000,2.02,2023-09-22 04:36:32,2024-08-31 22:57:12
+3005e2b3-beb5-45e5-8d59-5bd5050067aa,FastWallet Middle East,E-commerce,individual,KW,Salmiya,2024-02-10,True,True,0.078,50000,2.67,2024-02-10 12:12:19,2024-07-05 08:45:49
+be5eb1b3-9c37-40d0-881c-d33239287594,Al Misr Tech,E-commerce,company,SA,Khamis Mushait,2023-01-06,False,True,0.056,100000,1.93,2023-01-06 02:25:59,2024-08-24 06:41:39
+db5badfb-f5d4-42b2-bbdb-f421f118dedb,Giza LLC,Food & Beverage,company,SA,Khobar,2024-06-25,False,True,0.042,500000,1.83,2024-06-25 10:30:17,2024-12-17 02:16:21
+8fe49319-d922-44b4-a824-1ca7e9ee75d2,Nile Group,Retail,individual,QA,Al Wakrah,2021-09-08,True,True,0.133,50000,3.0,2021-09-08 22:51:56,2025-08-02 21:30:32
+98ef22c6-935d-4a45-a800-0de1b7e6029f,Ahmed Enterprises,Food & Beverage,company,QA,Al Khor,2025-06-09,True,True,0.042,1000000,1.89,2025-06-09 04:58:45,2025-07-02 23:35:55
+0245d5f4-3c6b-4808-9467-aca50ef45a7e,Thiqah Plus,Food & Beverage,company,AE,Dubai,2021-12-27,True,True,0.207,1000000,3.25,2021-12-27 14:41:15,2022-02-07 20:59:18
+4d6f7adc-a1ab-45d9-977c-f457dd1f632c,Beit Giza Zone,Retail,company,EG,Giza,2021-05-17,True,True,0.191,50000,1.55,2021-05-17 03:46:28,2026-01-06 22:29:59
+f84988a7-7001-4126-9da0-b7fc17254449,Abu Itqan Tech,E-commerce,company,SA,Makkah,2025-07-08,True,True,0.178,100000,3.19,2025-07-08 12:04:27,2026-01-20 02:31:18
+d030e75a-4933-4aef-8eb8-01892a4e5d8b,Nasser Enterprises,Healthcare,company,SA,Buraidah,2025-06-21,False,True,0.016,500000,3.45,2025-06-21 21:25:20,2025-08-04 05:01:11
+b19c9fdb-7a32-48ad-9f03-3f79c9cd29ed,DigiTransfer Arabia,E-commerce,individual,EG,Port Said,2026-02-05,True,True,0.431,50000,1.72,2026-02-05 02:07:19,2026-02-21 20:43:21
+508f74ec-6b7b-413a-8bc1-6f438916e5ad,Dar Majd Group,Education,company,EG,Suez,2023-06-01,True,True,0.105,100000,3.12,2023-06-01 00:44:13,2024-05-07 04:44:29
+4f22c6eb-ccfb-4949-8c28-351f21dd16cf,Abu Dubai Pro,Retail,enterprise,EG,Port Said,2022-04-12,True,True,0.345,500000,2.17,2022-04-12 02:36:25,2024-03-09 09:46:00
+6d39c84d-6b1b-45a7-9884-8792a2f8501b,PayCash MENA,Food & Beverage,company,AE,Dubai,2024-07-01,True,True,0.033,100000,2.39,2024-07-01 11:49:23,2024-10-29 13:57:31
+1e40a424-812d-4a4b-b0af-1248a4385d3b,Abu Majd Enterprises,E-commerce,company,SA,Madinah,2023-04-17,False,True,0.135,50000,2.38,2023-04-17 14:49:25,2023-04-27 02:49:56
+f1673409-24a6-41b8-9a9e-60222bc16e04,Abu Giza Store,E-commerce,company,SA,Dammam,2022-02-04,True,True,0.505,500000,2.39,2022-02-04 04:25:49,2025-01-25 10:21:00
+063947b9-8dbf-42a1-92ae-e99c5341dcb7,Markaz Watan LLC,E-commerce,individual,EG,Tanta,2023-01-15,True,True,0.997,250000,1.57,2023-01-15 10:58:33,2023-07-27 21:18:36
+6e9948e2-7586-44b6-982e-708922fbcf39,Elsayed Co.,Education,enterprise,EG,Aswan,2025-12-27,True,True,0.004,500000,1.6,2025-12-27 15:17:12,2026-02-26 01:41:23
+bc857bb9-9bcf-4821-8047-6ff80635adea,E-Cash Arabia,Food & Beverage,company,EG,Zagazig,2024-09-15,True,True,0.098,250000,2.82,2024-09-15 06:52:44,2025-02-18 10:03:51
+5bb546de-cdd7-43f9-9eb1-ccb4bf1f8a69,Al-Nahyan Enterprises,Travel,company,SA,Taif,2024-05-17,True,True,0.052,1000000,2.54,2024-05-17 20:35:36,2025-04-13 00:59:00
+a4563327-bee1-4e2c-8292-3316b5594372,Fujairah Hub,Food & Beverage,individual,SA,Khamis Mushait,2022-01-26,True,True,0.01,50000,1.55,2022-01-26 04:04:31,2022-02-18 01:31:09
+f18c7034-c21d-431f-8de4-0c3cc45154d3,Al-Otaibi Est.,Education,individual,EG,Alexandria,2022-10-05,True,True,0.126,250000,2.99,2022-10-05 21:11:01,2024-05-12 04:32:32
+60311f19-a08a-43a9-8d26-b0fff59c3e61,EasyTransfer Arabia,Education,company,AE,Ajman,2022-03-01,True,True,0.001,1000000,3.04,2022-03-01 00:18:55,2023-07-24 03:15:53
+52afb5fa-c03d-4756-87f6-e6f6d475bbb5,EasyMoney Gulf,E-commerce,individual,SA,Khamis Mushait,2023-10-31,True,True,0.142,100000,2.56,2023-10-31 15:14:15,2024-12-10 07:11:13
+a8a8f43c-9557-4f72-9e4c-370568288c83,PayCoin,Food & Beverage,company,KW,Farwaniya,2025-10-01,True,False,0.306,100000,3.03,2025-10-01 13:11:27,2025-10-27 13:02:09
+32aab455-b2df-43ee-97e8-6a98400c9b53,Najd Plus,Gaming,company,EG,Port Said,2025-10-09,True,True,0.323,1000000,1.9,2025-10-09 23:44:33,2026-01-29 18:26:54
+9c46f912-7eab-4a4a-83e2-ffec4e4f7c9b,Al-Maktoum LLC,Healthcare,company,AE,Ajman,2022-06-17,True,True,0.463,50000,1.71,2022-06-17 18:46:45,2025-05-28 15:34:26
+28f50066-5141-4407-a868-09cb28b15f0c,Al-Zahrani Group,Travel,enterprise,SA,Khobar,2023-03-27,True,True,0.202,250000,3.2,2023-03-27 22:19:40,2024-02-01 03:23:55
+2abcb1f5-6a72-4ebe-b4cd-1143c30b2270,SmartTransfer,Utilities,company,AE,Sharjah,2023-03-09,True,True,0.031,1000000,1.58,2023-03-09 03:55:59,2023-05-16 06:45:47
+226e005e-b7d4-46f2-af96-8bd2c3560e1e,FastTransfer,Gaming,enterprise,AE,Umm Al Quwain,2021-12-11,True,True,0.086,50000,2.95,2021-12-11 07:11:47,2023-01-31 23:41:06
+8a23e70c-b939-4115-b6ad-99d56d6e0091,Souq Burj Group,Gaming,individual,EG,Tanta,2025-03-31,True,True,0.326,250000,2.95,2025-03-31 04:48:42,2025-12-27 19:11:33
+d50454d5-64cb-4fc5-bd2c-9fcc0c0fe40e,Mohamed LLC,E-commerce,company,AE,Sharjah,2023-07-01,True,True,0.044,250000,3.19,2023-07-01 10:40:05,2023-10-23 17:01:25
+58ca582e-9e0d-4660-aebf-b00f9edad0e4,El Cleopatra Tech,Education,individual,SA,Taif,2025-04-09,True,False,0.088,50000,2.77,2025-04-09 02:39:29,2026-01-07 06:14:44
+bfb3fe22-ce2d-42ed-99c2-fadc459fea89,Salam Plus,Healthcare,individual,AE,Ras Al Khaimah,2024-01-23,True,True,0.144,100000,2.49,2024-01-23 15:33:41,2024-05-13 02:41:02
