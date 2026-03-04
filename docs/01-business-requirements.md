@@ -30,7 +30,7 @@ A fast-growing digital payment platform operating across the MENA region (focusi
 
 | Objective                                   | Success Criteria                                                                                                                   |
 | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| **Consolidate Data Sources**                | 100% of the 7 raw entities are ingested, cleansed, and modeled into a Star Schema daily.                                           |
+| **Consolidate Data Sources**                | 100% of the 7 raw entities are ingested into Bronze and curated in Silver daily; Gold star schema models are built for analytics-critical entities and KPIs.                                           |
 | **Enable Multi-dimensional Fraud Analysis** | Reduce the data preparation time for Risk Analysts from days to hours by linking transactions to devices and KYC statuses.         |
 | **Automate Financial Reconciliation**       | Deliver automated Total Payment Volume (TPV) and revenue aggregations with zero discrepancies while handling multi-currency conversions. |
 
