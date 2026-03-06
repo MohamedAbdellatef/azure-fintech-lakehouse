@@ -385,6 +385,7 @@ Quarantine rows that violate:
 - **Completion time:** < 30 minutes for full refresh (1M transactions)
 - **Backfill:** Supported via `batch_date` parameter in ADF
 - **Idempotency:** Re-running same `batch_date` performs MERGE (upsert) - safe to retry
+- **Watermark boundary:** Incremental loads read rows where event timestamp is `> last_successful_watermark` and `<= current_batch_cutoff`; apply a small configurable lookback window for late-arriving records.
 
 ### 8.2 SLA Targets
 

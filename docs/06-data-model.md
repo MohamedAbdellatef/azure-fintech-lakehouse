@@ -424,4 +424,5 @@
 - **Tests:** See `docs/05-data-quality.md` Section "Minimum dbt Test Set"
 - **Tags:** `tag: "fact"`, `tag: "dim"`, `tag: "audit"` for selective runs
 - **Incremental strategy:** `merge` on the primary key (`transaction_id` for atomic facts; composite surrogate key for aggregated facts) with `batch_date` filter for partition pruning
+- **Watermark + late arrivals:** Incremental models apply event-time predicate `> last_successful_watermark - lookback_window` and `<= batch_cutoff_ts`, then `merge` on PK to keep reruns/backfills idempotent
 

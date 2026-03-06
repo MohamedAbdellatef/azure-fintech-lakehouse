@@ -14,8 +14,8 @@ The Silver layer maintains a 1:1 structural relationship with Bronze (keeping th
 
 | Source Entity | Target Entity | Transformation Logic |
 |---|---|---|
-| All Bronze Tables | All Silver Tables | 1. Cast string amounts/scores to `DECIMAL`<br>2. Cast string timestamps to `TIMESTAMP` (UTC normalized)<br>3. Cast string flags to `BOOLEAN`<br>4. Add `_dq_valid` and `_dq_issues` flags |
-| `transactions` | `silver_transactions` | 1. **Dedup:** Keep row with earliest `transaction_timestamp` partitioned by `transaction_id`<br>2. **Quarantine (Critical):** Move rows failing critical rules to `dq_quarantine` (negative `amount`, orphan FKs, invalid enums, receiver conditional FK/NULL logic)<br>3. **Timestamp Correction (Warning):** If `completed_timestamp < transaction_timestamp`, set `completed_timestamp = NULL` |
+| All Bronze Tables | All Silver Tables | 1. Cast string amounts/scores to `DECIMAL`<br>2. Cast string timestamps to `TIMESTAMP` (UTC normalized)<br>3. Cast string flags to `BOOLEAN`<br>4. Add `_dq_valid` and `_dq_issues` flags<br>5. Apply incremental filter: entity event timestamp `> last_successful_watermark - lookback_window` and `<= current_batch_cutoff` |
+| `transactions` | `silver_transactions` | 1. **Dedup:** Keep row with earliest `transaction_timestamp` partitioned by `transaction_id`<br>2. **Quarantine (Critical):** Move rows failing critical rules to `dq_quarantine` (negative `amount`, orphan FKs, invalid enums, receiver conditional FK/NULL logic)<br>3. **Timestamp Correction (Warning):** If `completed_timestamp < transaction_timestamp`, set `completed_timestamp = NULL`<br>4. **Load pattern:** Upsert with `MERGE` on `transaction_id` for idempotent reruns and backfills |
 
 ---
 
