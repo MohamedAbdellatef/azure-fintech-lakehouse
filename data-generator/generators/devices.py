@@ -71,8 +71,16 @@ def generate_devices(users_df: pd.DataFrame, output_dir: str = None) -> pd.DataF
                 model = random.choice(android_models)
                 os_version = f"Android {random.randint(11, 14)}"
             else:  # web
-                model = random.choice(['Chrome', 'Safari', 'Firefox', 'Edge'])
-                os_version = f"Web Browser"
+                browser = random.choice(
+                    ['Chrome', 'Safari', 'Firefox', 'Edge'])
+                browser_versions = {
+                    'Chrome': f"Chrome {random.randint(110, 124)}",
+                    'Safari': f"Safari {random.randint(16, 18)}.{random.randint(0, 5)}",
+                    'Firefox': f"Firefox {random.randint(110, 125)}",
+                    'Edge': f"Edge {random.randint(110, 124)}"
+                }
+                model = browser
+                os_version = browser_versions[browser]
 
             first_seen = fake.date_time_between(
                 start_date=reg_date, end_date='now')

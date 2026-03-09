@@ -124,7 +124,8 @@ def generate_merchants(num_merchants: int = None, output_dir: str = None) -> pd.
     merchants = []
 
     for i in range(n):
-        # All 5 MENA countries (matching BRD scope)
+        # Merchant geo distribution differs from user weights intentionally:
+        # Gulf states host more businesses relative to their population share.
         country = random.choices(
             ['EG', 'SA', 'AE', 'KW', 'QA'],
             weights=[0.35, 0.30, 0.20, 0.08, 0.07]
