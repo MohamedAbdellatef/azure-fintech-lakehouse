@@ -314,9 +314,10 @@
 
 ---
 
-## 5) Monitoring & Audit Tables
+## 5) Monitoring & Audit Tables (Dedicated Audit Schema)
 
-> These tables support KPI-11 (Freshness), KPI-12 (Quarantine Rate), KPI-13 (Completeness), and BRD questions Q16-Q18.
+> **Storage Location:** These tables reside in a dedicated `lakehouse/audit/` container/schema, completely isolated from the Silver and Gold business data.
+> **Purpose:** These tables support KPI-11 (Freshness), KPI-12 (Quarantine Rate), KPI-13 (Completeness), and BRD questions Q16-Q18.
 
 ### 5.1 `gold_refresh_audit`
 

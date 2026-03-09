@@ -384,7 +384,7 @@ Quarantine rows that violate:
 - **Frequency:** Daily batch (for portfolio); production would be hourly or near-real-time
 - **Completion time:** < 30 minutes for full refresh (1M transactions)
 - **Backfill:** Supported via `batch_date` parameter in ADF
-- **Idempotency:** Re-running same `batch_date` performs MERGE (upsert) - safe to retry
+- **Idempotency:** All Silver and Gold layer loads must be idempotent. Re-processing the same batch must result in the same state without creating duplicate records or double-counting financial volumes.
 - **Watermark boundary:** Incremental loads read rows where event timestamp is `> last_successful_watermark` and `<= current_batch_cutoff`; apply a small configurable lookback window for late-arriving records.
 
 ### 8.2 SLA Targets
@@ -406,7 +406,9 @@ Quarantine rows that violate:
 - **Security:** Restrict PII access with least-privilege RBAC; expose masked/hashed sensitive fields in analytics outputs.
 - **Recoverability:** Re-run any `batch_date` idempotently; target recovery within 60 minutes.
 
-### 8.4 Audit Tables
+### 8.4 Audit Tables (Dedicated Audit Schema)
+
+> **Architectural Decision:** All control and audit tables (`load_audit`, `dq_metrics`, `dq_quarantine`) are stored in a dedicated `audit` schema/container in the Data Lake. They are strictly separated from the business data in the Silver and Gold layers. This ensures a clean separation of concerns and simplifies RBAC permissions for business analysts.
 
 **load_audit:**
 | Column | Type | Description |
