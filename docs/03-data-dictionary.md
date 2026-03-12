@@ -5,6 +5,7 @@
 | 1.0     | 2026-03-03 | Mohamed Abdellatef | Final  |
 
 > Column-level contract for every data asset across Bronze, Silver, and Gold layers.
+> Note: Bronze types in this document describe source/business semantics. Physical Bronze Delta tables may still preserve raw CSV values as `STRING` for minimal-transformation landing, with strict type enforcement happening in Silver.
 
 ---
 
@@ -232,15 +233,16 @@
 
 ## 5) Silver Layer Guarantees
 
-> Silver keeps the same business columns as Bronze but may add technical/enrichment columns (e.g., `*_utc`, `_dq_valid`, `_dq_issues`) and enforces quality by quarantine.
+> Silver keeps the same business meaning as Bronze, but normalized timestamp outputs may be stored in canonical UTC columns (for example, `transaction_timestamp_utc`, `completed_timestamp_utc`). Silver also adds technical columns such as `_dq_valid` and `_dq_issues` and enforces quality by quarantine.
 
 | Guarantee | Details |
 |---|---|
 | **Deduplication** | `transaction_id` is unique after dedup (1,010,000 -> ~1,000,000 rows); keep row with earliest `transaction_timestamp` |
-| **UTC standardization** | All timestamps normalized to UTC (see BRD Section 5.4) |
+| **UTC standardization** | All timestamps normalized to UTC (see BRD Section 5.4); canonical Silver timestamp columns use `*_utc` naming where applicable |
 | **Negative amount removal** | `amount < 0` rows quarantined to `dq_quarantine` |
-| **Invalid timestamp handling** | Where `completed_timestamp < transaction_timestamp`, set `completed_timestamp = NULL` (row is otherwise valid) |
-| **Orphan FK check** | `sender_account_id` must exist in `accounts`; orphans quarantined |
+| **Negative fee removal** | `fee_amount < 0` rows quarantined to `dq_quarantine` |
+| **Invalid timestamp handling** | Where `completed_timestamp < transaction_timestamp`, set `completed_timestamp_utc = NULL` after UTC normalization (row is otherwise valid) |
+| **Orphan FK check** | Critical transaction FKs such as `sender_account_id`, `device_id`, and `payment_method_id` must exist in parent tables; orphans are quarantined |
 | **Type casting** | All columns cast to correct Databricks types (STRING, DECIMAL, TIMESTAMP, BOOLEAN, etc.) |
 | **DQ flags** | Each Silver table adds `_dq_valid` (BOOLEAN) and `_dq_issues` (STRING) columns |
 
@@ -320,7 +322,7 @@ merchants (2K) - standalone entity, referenced by transactions
 ## 9) Notes
 
 1. **Bronze** stores raw generator output as-is - timestamps are naive (no timezone), some business IDs (notably `transactions.transaction_id`) may contain duplicates, and amounts may be negative.
-2. **Silver** normalizes all timestamps to UTC, deduplicates, quarantines invalid records and applies safe corrections where defined (e.g., invalid completed timestamp), and casts types. No new business columns are added.
+2. **Silver** normalizes all timestamps to UTC, persists canonical UTC timestamp columns where defined, deduplicates, quarantines invalid records and applies safe corrections where defined (e.g., invalid completed timestamp), and casts types.
 3. **Gold** adds surrogate keys, resolves SCD2 dimensions via point-in-time (as-of) joins, computes aggregations, and drops PII/audit columns.
 4. `kyc_records` flows through Bronze and Silver but is **not promoted to Gold** - KYC status is tracked via `dim_user.kyc_status` (SCD2).
 5. All monetary values remain in original transaction currency throughout all layers (no conversion).
