@@ -27,7 +27,7 @@
 |---|---|---|---|
 | Duplicate PKs | ~1% (10,000 dups) | 0% - unique | Dedup: keep row with earliest `transaction_timestamp` |
 | Negative amounts | ~2% (20,115 rows) | 0% - all positive | Quarantine to `dq_quarantine` |
-| Invalid timestamp order | ~1% (11,044 rows) | Corrected | Set `completed_timestamp = NULL` (row otherwise valid) |
+| Invalid timestamp order | ~1% (11,044 rows) | Corrected | Set `completed_timestamp_utc = NULL` after UTC normalization (row otherwise valid) |
 | NULL emails | ~5% (2,535 rows) | Pass through | Nullable field - no action needed |
 | NULL phone numbers | ~3% (1,533 rows) | Pass through | Nullable field - no action needed |
 | NULL doc hash | ~2% (1,039 rows) | Pass through | Nullable field - no action needed |
@@ -50,8 +50,8 @@
 | TXN-005 | Critical | `transaction_type` | IN (`P2P_Transfer`, `Merchant_Payment`, `Deposit`, `Withdrawal`, `Bill_Payment`) | 100% | 100% | - |
 | TXN-006 | Critical | `currency` | IN (`EGP`, `SAR`, `AED`, `KWD`, `QAR`) | 100% | 100% | - |
 | TXN-007 | Critical | `amount` | `> 0` | ~98% | 100% | Quarantine negatives to `dq_quarantine` |
-| TXN-008 | Warning | `fee_amount` | `>= 0` | 100% | 100% | - |
-| TXN-009 | Warning | `completed_timestamp` | `>= transaction_timestamp` when not NULL | ~99% | 100% | Set `completed_timestamp = NULL` if invalid |
+| TXN-008 | Critical | `fee_amount` | `>= 0` | 100% | 100% | Quarantine negatives to `dq_quarantine` |
+| TXN-009 | Warning | `completed_timestamp` | `>= transaction_timestamp` when not NULL | ~99% | 100% | Set `completed_timestamp_utc = NULL` if invalid |
 | TXN-010 | Warning | `risk_score` | Between 0.000 and 1.000 | 100% | 100% | - |
 | TXN-011 | Critical | `is_flagged`, `fraud_pattern` | If `is_flagged = True` then `fraud_pattern` NOT NULL | 100% | 100% | - |
 | TXN-012 | Critical | `fraud_pattern` | When not NULL: IN (`velocity`, `amount`, `time`, `new_device`, `cross_border`) | 100% | 100% | - |
@@ -62,7 +62,7 @@
 | TXN-017 | Critical | `transaction_type`, `receiver_type` | `P2P_Transfer` => `receiver_type = 'account'` | 100% | 100% | - |
 | TXN-018 | Warning | `latitude` | Between 22.0 and 32.0 (MENA bounds) | 100% | 100% | - |
 | TXN-019 | Warning | `longitude` | Between 29.0 and 56.0 (MENA bounds) | 100% | 100% | - |
-| TXN-020 | Warning | `device_id` | FK exists in `devices` | 100% | 100% | - |
+| TXN-020 | Critical | `device_id` | FK exists in `devices` | 100% | 100% | Quarantine orphans |
 | TXN-021 | Critical | `payment_method_id` | FK exists in `payment_methods` | 100% | 100% | Quarantine orphans |
 
 ### 3.2 `users` (7 rules)
@@ -153,7 +153,7 @@ Rows failing these checks are corrected and retained in Silver.
 | Condition | Example | Action |
 |---|---|---|
 | Duplicate transaction ID | Two rows with same `transaction_id` | Keep row with earliest `transaction_timestamp`, discard duplicate |
-| Invalid timestamp order | `completed_timestamp < transaction_timestamp` | Set `completed_timestamp = NULL` - row is otherwise valid |
+| Invalid timestamp order | `completed_timestamp < transaction_timestamp` | Set `completed_timestamp_utc = NULL` after UTC normalization; row is otherwise valid |
 
 ### 4.3 What Passes Through (Warning Only)
 
@@ -246,7 +246,7 @@ tests:
 | Receiver FK -> accounts | `silver_transactions` | If `receiver_type = 'account'`, `receiver_id` exists in `silver_accounts` | Custom test |
 | Receiver FK -> merchants | `silver_transactions` | If `receiver_type = 'merchant'`, `receiver_id` exists in `silver_merchants` | Custom test |
 | Txn type logic | `silver_transactions` | `Merchant_Payment` => `receiver_type = 'merchant'`; `P2P_Transfer` => `receiver_type = 'account'` | Custom test |
-| UTC timestamps | All Silver tables | All `*_utc` columns are valid timestamps | `not_null` + type check |
+| UTC timestamps | All Silver tables | All canonical `*_utc` columns are valid timestamps | `not_null` + type check |
 
 ### 6.3 Gold-Specific Tests
 
@@ -293,5 +293,5 @@ tests:
 | Negative amount count | 20,115 | 20,115 (Section 4) |
 | Bad timestamp count | 11,044 | 11,044 (Section 4) |
 | Dedup strategy | Keep earliest `transaction_timestamp` | Keep earliest `transaction_timestamp` (Section 5) |
-| Invalid timestamp action | Set `completed_timestamp = NULL` | Set `completed_timestamp = NULL` (Section 5) |
+| Invalid timestamp action | Set `completed_timestamp_utc = NULL` | Set `completed_timestamp_utc = NULL` (Section 5) |
 | Quarantine table schema | Section 4.4 | Matches `dq_quarantine` in Data Model Section 5.2 |

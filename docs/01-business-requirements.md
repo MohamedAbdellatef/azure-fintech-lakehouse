@@ -260,7 +260,7 @@ Planned supporting tables: `gold_refresh_audit`, `dq_quarantine`, `dq_metrics`.
 ### 5.4 Timezone Policy (Locked)
 
 - **Bronze/raw timestamps:** Stored as generated source timestamps (naive).
-- **Silver timestamps:** Normalized to UTC and validated.
+- **Silver timestamps:** Normalized to UTC, validated, and persisted in canonical `*_utc` columns where applicable (for example, `transaction_timestamp_utc`, `completed_timestamp_utc`).
 - **Gold timestamps:** Use Silver UTC-standardized timestamps.
 - **Reporting day derived from:** `transaction_timestamp` truncated to DATE in UTC
 - **Local time derivation:** Use user's `country` field to derive local timezone when needed
@@ -336,7 +336,7 @@ Quarantine rows that violate:
 
 - **Missing primary key for the entity:** (e.g., `users.user_id`, `accounts.account_id`, `merchants.merchant_id`, `transactions.transaction_id`)
 - **Negative amounts:** `amount < 0` or `fee_amount < 0`
-- **Invalid timestamps:** `completed_timestamp < transaction_timestamp`
+- **Uncorrectable timestamp issues:** invalid or missing mandatory event timestamps; if `completed_timestamp < transaction_timestamp`, keep the row and set `completed_timestamp_utc = NULL` after UTC normalization
 - **Invalid status:** `status NOT IN ('Success', 'Failed', 'Pending', 'Reversed')`
 - **Invalid KYC status:** `kyc_status NOT IN ('verified', 'pending', 'rejected')`
 - **Orphan foreign keys:** e.g., `accounts.user_id`, `devices.user_id`, `payment_methods.user_id` not found in `users`; `transactions.sender_account_id` not found in `accounts`; `transactions.device_id` not found in `devices`; `transactions.payment_method_id` not found in `payment_methods`; conditional `transactions.receiver_id` not found in `accounts`/`merchants` based on `receiver_type`
