@@ -15,7 +15,21 @@ The Silver layer maintains a 1:1 structural relationship with Bronze (keeping th
 | Source Entity     | Target Entity         | Transformation Logic                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | ----------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | All Bronze Tables | All Silver Tables     | 1. Cast string amounts/scores to `DECIMAL`<br>2. Cast string timestamps to UTC-normalized `TIMESTAMP` columns; where canonical normalized columns are introduced, name them with `*_utc`<br>3. Cast string flags to `BOOLEAN`<br>4. Add `_dq_valid` and `_dq_issues` flags<br>5. Apply incremental filter: entity event timestamp `> last_successful_watermark - lookback_window` and `<= current_batch_cutoff`                                                                                                                                   |
-| `transactions`    | `silver_transactions` | 1. **Dedup:** Keep row with earliest `transaction_timestamp` partitioned by `transaction_id`<br>2. **Quarantine (Critical):** Move rows failing critical rules to `dq_quarantine` (negative `amount`, negative `fee_amount`, orphan FKs including `device_id` and `payment_method_id`, invalid enums, receiver conditional FK/NULL logic)<br>3. **Timestamp Correction (Warning):** Persist normalized timestamps in `transaction_timestamp_utc` / `completed_timestamp_utc`; if `completed_timestamp < transaction_timestamp`, set `completed_timestamp_utc = NULL`<br>4. **Load pattern:** Upsert with `MERGE` on `transaction_id` for idempotent reruns and backfills |
+| `transactions`    | `silver_transactions` | 1. **Dedup:** Keep row with earliest `transaction_timestamp` partitioned by `transaction_id`<br>2. **Quarantine (Critical):** Move rows failing critical rules to `dq_quarantine` (negative `amount`, negative `fee_amount`, missing required FKs such as `sender_account_id` / `device_id` / `payment_method_id`, orphan FKs including conditional `receiver_id` account/merchant checks, invalid enums, receiver conditional FK/NULL logic)<br>3. **Timestamp Correction (Warning):** Persist normalized timestamps in `transaction_timestamp_utc` / `completed_timestamp_utc`; if `completed_timestamp < transaction_timestamp`, set `completed_timestamp_utc = NULL`<br>4. **Load pattern:** Upsert with `MERGE` on `transaction_id` for idempotent reruns and backfills |
+
+---
+
+## 1.1 Incremental Watermark Columns
+
+| Entity | Watermark / Event Column | Rationale |
+|---|---|---|
+| `transactions` | `transaction_timestamp` | Event-time transaction processing |
+| `users` | `updated_at` | Latest profile state changes |
+| `accounts` | `updated_at` | Latest account state changes |
+| `devices` | `last_seen_at` | Latest device activity |
+| `payment_methods` | `updated_at` | Latest payment-method state changes |
+| `kyc_records` | `updated_at` | Latest KYC review state changes |
+| `merchants` | `updated_at` | Latest merchant state changes |
 
 ---
 
@@ -40,7 +54,7 @@ The Silver layer maintains a 1:1 structural relationship with Bronze (keeping th
 | `is_active`           | `is_active`             | Direct mapping                                        |
 | `registration_ts_utc` | `registration_date`     | Timestamp cast/normalized to UTC TIMESTAMP            |
 | `registration_date`   | `registration_date`     | Cast to UTC DATE                                      |
-| `valid_from`          | -                       | dbt snapshot `dbt_updated_at` (start of validity)     |
+| `valid_from`          | -                       | dbt snapshot `dbt_valid_from` (start of validity)     |
 | `valid_to`            | -                       | dbt snapshot `dbt_valid_to` (end of validity)         |
 | `is_current`          | -                       | `CASE WHEN valid_to IS NULL THEN True ELSE False END` |
 
@@ -65,7 +79,7 @@ _(Note: `phone_number`, `date_of_birth`, `gender`, `created_at`, `updated_at` ar
 | `is_verified`       | `is_verified`               | Direct mapping                                        |
 | `is_active`         | `is_active`                 | Direct mapping                                        |
 | `registration_date` | `registration_date`         | Direct mapping                                        |
-| `valid_from`        | -                           | dbt snapshot `dbt_updated_at`                         |
+| `valid_from`        | -                           | dbt snapshot `dbt_valid_from`                         |
 | `valid_to`          | -                           | dbt snapshot `dbt_valid_to`                           |
 | `is_current`        | -                           | `CASE WHEN valid_to IS NULL THEN True ELSE False END` |
 
@@ -182,7 +196,7 @@ _(Note: `phone_number`, `date_of_birth`, `gender`, `created_at`, `updated_at` ar
 | `is_flagged`                | `TXN.is_flagged`                                                                      | Direct mapping                                                                                                                                                                                     |
 | `fraud_pattern`             | `TXN.fraud_pattern`                                                                   | Direct mapping                                                                                                                                                                                     |
 | `risk_score`                | `TXN.risk_score`                                                                      | Direct mapping                                                                                                                                                                                     |
-| `is_trusted_device`         | `silver_devices.is_trusted`                                                           | Read from `dim_device` join                                                                                                                                                                        |
+| `is_trusted_device`         | `dim_device.is_trusted`                                                           | Read from `dim_device` join                                                                                                                                                                        |
 | `transaction_timestamp_utc` | `TXN.transaction_timestamp_utc`                                                       | Direct mapping                                                                                                                                                                                     |
 | `completed_timestamp_utc`   | `TXN.completed_timestamp_utc`                                                         | Direct mapping                                                                                                                                                                                     |
 | `transaction_date`          | `TXN.transaction_timestamp_utc`                                                       | `CAST(transaction_timestamp_utc AS DATE)`                                                                                                                                                          |
