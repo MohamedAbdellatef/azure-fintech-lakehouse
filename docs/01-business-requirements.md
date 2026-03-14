@@ -262,7 +262,7 @@ Planned supporting tables: `gold_refresh_audit`, `dq_quarantine`, `dq_metrics`.
 - **Bronze/raw timestamps:** Stored as generated source timestamps (naive).
 - **Silver timestamps:** Normalized to UTC, validated, and persisted in canonical `*_utc` columns where applicable (for example, `transaction_timestamp_utc`, `completed_timestamp_utc`).
 - **Gold timestamps:** Use Silver UTC-standardized timestamps.
-- **Reporting day derived from:** `transaction_timestamp` truncated to DATE in UTC
+- **Reporting day derived from:** `transaction_timestamp_utc` truncated to DATE in UTC
 - **Local time derivation:** Use user's `country` field to derive local timezone when needed
 - **Rationale:** UTC standardization prevents timezone ambiguity in multi-region operations.
 
@@ -335,6 +335,7 @@ The `transactions` table uses a **polymorphic receiver** pattern:
 Quarantine rows that violate:
 
 - **Missing primary key for the entity:** (e.g., `users.user_id`, `accounts.account_id`, `merchants.merchant_id`, `transactions.transaction_id`)
+- **Missing critical transaction foreign keys:** `sender_account_id`, `device_id`, or `payment_method_id` is NULL
 - **Negative amounts:** `amount < 0` or `fee_amount < 0`
 - **Uncorrectable timestamp issues:** invalid or missing mandatory event timestamps; if `completed_timestamp < transaction_timestamp`, keep the row and set `completed_timestamp_utc = NULL` after UTC normalization
 - **Invalid status:** `status NOT IN ('Success', 'Failed', 'Pending', 'Reversed')`
@@ -343,8 +344,8 @@ Quarantine rows that violate:
 
 **Quarantine table must store:**
 
-- `entity_name`, `batch_date`, `dq_rule_name`
-- `dq_reason`, `source_record_id`, `created_at`
+- `entity_name`, `batch_date`, `dq_rule_id`
+- `dq_reason`, `source_record_id`, `quarantined_at`
 
 ### 7.2 Tests (Minimum)
 
@@ -386,6 +387,14 @@ Quarantine rows that violate:
 - **Backfill:** Supported via `batch_date` parameter in ADF
 - **Idempotency:** All Silver and Gold layer loads must be idempotent. Re-processing the same batch must result in the same state without creating duplicate records or double-counting financial volumes.
 - **Watermark boundary:** Incremental loads read rows where event timestamp is `> last_successful_watermark` and `<= current_batch_cutoff`; apply a small configurable lookback window for late-arriving records.
+- **Entity watermark columns:**
+  - `transactions` -> `transaction_timestamp`
+  - `users` -> `updated_at`
+  - `accounts` -> `updated_at`
+  - `devices` -> `last_seen_at`
+  - `payment_methods` -> `updated_at`
+  - `kyc_records` -> `updated_at`
+  - `merchants` -> `updated_at`
 
 ### 8.2 SLA Targets
 
@@ -408,9 +417,9 @@ Quarantine rows that violate:
 
 ### 8.4 Audit Tables (Dedicated Audit Schema)
 
-> **Architectural Decision:** All control and audit tables (`load_audit`, `dq_metrics`, `dq_quarantine`) are stored in a dedicated `audit` schema/container in the Data Lake. They are strictly separated from the business data in the Silver and Gold layers. This ensures a clean separation of concerns and simplifies RBAC permissions for business analysts.
+> **Architectural Decision:** All control and audit tables (`gold_refresh_audit`, `dq_metrics`, `dq_quarantine`) are stored in a dedicated `audit` schema/container in the Data Lake. They are strictly separated from the business data in the Silver and Gold layers. This ensures a clean separation of concerns and simplifies RBAC permissions for business analysts.
 
-**load_audit:**
+**gold_refresh_audit:**
 | Column | Type | Description |
 |--------|------|-------------|
 | run_id | STRING | Unique pipeline run ID |

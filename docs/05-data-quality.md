@@ -39,7 +39,7 @@
 
 ## 3) DQ Rules by Entity
 
-### 3.1 `transactions` (21 rules)
+### 3.1 `transactions` (27 rules)
 
 | Rule ID | Severity | Column(s) | Logic | Bronze | Silver | Silver Action |
 |---|---|---|---|---|---|---|
@@ -64,6 +64,12 @@
 | TXN-019 | Warning | `longitude` | Between 29.0 and 56.0 (MENA bounds) | 100% | 100% | - |
 | TXN-020 | Critical | `device_id` | FK exists in `devices` | 100% | 100% | Quarantine orphans |
 | TXN-021 | Critical | `payment_method_id` | FK exists in `payment_methods` | 100% | 100% | Quarantine orphans |
+| TXN-022 | Critical | `receiver_id` | If `receiver_type = 'account'`, `receiver_id` exists in `accounts` | 100% | 100% | Quarantine orphans |
+| TXN-023 | Critical | `receiver_id` | If `receiver_type = 'merchant'`, `receiver_id` exists in `merchants` | 100% | 100% | Quarantine orphans |
+| TXN-024 | Critical | `sender_account_id` | NOT NULL | 100% | 100% | - |
+| TXN-025 | Critical | `device_id` | NOT NULL | 100% | 100% | - |
+| TXN-026 | Critical | `payment_method_id` | NOT NULL | 100% | 100% | - |
+| TXN-027 | Critical | `transaction_type`, `receiver_type`, `receiver_id` | `Deposit`, `Withdrawal`, `Bill_Payment` => `receiver_type = 'self'` and `receiver_id IS NULL` | 100% | 100% | - |
 
 ### 3.2 `users` (7 rules)
 

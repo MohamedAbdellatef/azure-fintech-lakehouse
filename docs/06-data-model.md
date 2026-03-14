@@ -20,7 +20,7 @@
 | **SCD strategy** | Type 2 for dimensions with business-critical history; Type 1 for all others. Facts resolve SCD2 dimensions with point-in-time (as-of) joins using the fact timestamp or grain date (see Section 6) |
 | **Currency policy** | All monetary values in original transaction currency (no conversion in Gold); optional `amount_usd` for cross-country comparison |
 | **Timestamp policy** | All timestamps are Silver UTC-standardized (see BRD Section 5.4) |
-| **Reporting day** | `transaction_timestamp` truncated to DATE in UTC |
+| **Reporting day** | `transaction_timestamp_utc` truncated to DATE in UTC |
 | **Naming convention** | `fact_` prefix for facts, `dim_` prefix for dimensions, `_sk` suffix for surrogate keys |
 
 ---
@@ -389,7 +389,7 @@
 | Q3: P2P vs Merchant ratio by tier | `fact_transactions` | `dim_user` |
 | Q4: ATV per country | `fact_transactions` | `dim_geography`, `dim_date` |
 | Q5: High-value from new devices | `fact_fraud_alerts` | `dim_device`, `dim_user`, `dim_account` |
-| Q6: Location jumping | `fact_fraud_alerts` | `dim_user`, `dim_date` |
+| Q6: Location jumping | `fact_transactions` | `dim_user`, `dim_date` |
 | Q7: KYC vs failed/reversed | `fact_transactions` | `dim_user` (kyc_status) |
 | Q8: Merchant high-volume AML | `fact_merchant_daily_volume` | `dim_merchant`, `dim_date` |
 | Q9: DAU/MAU | `fact_user_daily_volume` | `dim_date`, `dim_user` |
@@ -397,7 +397,7 @@
 | Q11: Retention at 30/60/90 days | `fact_user_daily_volume` | `dim_user`, `dim_geography` |
 | Q12: Tier frequency + volume | `fact_user_daily_volume` | `dim_user` (user_tier) |
 | Q13: Device type distribution | `fact_transactions` | `dim_device` |
-| Q14: Fraud rate by device model | `fact_fraud_alerts` | `dim_device` |
+| Q14: Fraud rate by device model | `fact_transactions`, `fact_fraud_alerts` | `dim_device` |
 | Q15: Success rate by app version | `fact_transactions` | `dim_device` |
 | Q16: Gold freshness | `gold_refresh_audit` | - |
 | Q17: Quarantine rate + reasons | `dq_metrics`, `dq_quarantine` | - |
@@ -406,7 +406,7 @@
 | KPI-02: Revenue | `fact_transactions` | `dim_date`, `dim_merchant` |
 | KPI-03: ATV | `fact_transactions` | `dim_date`, `dim_geography` |
 | KPI-04: Success Rate | `fact_transactions` | `dim_date`, `dim_payment_method` |
-| KPI-05: Fraud Rate | `fact_fraud_alerts` | `dim_date` |
+| KPI-05: Fraud Rate | `fact_transactions`, `fact_fraud_alerts` | `dim_date` |
 | KPI-06: Untrusted Device Rate | `fact_transactions` | `dim_device` |
 | KPI-07: High-Risk Amount | `fact_fraud_alerts` | `dim_date` |
 | KPI-08: DAU/MAU | `fact_user_daily_volume` | `dim_date` |

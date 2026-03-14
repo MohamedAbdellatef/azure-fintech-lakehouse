@@ -242,7 +242,8 @@
 | **Negative amount removal** | `amount < 0` rows quarantined to `dq_quarantine` |
 | **Negative fee removal** | `fee_amount < 0` rows quarantined to `dq_quarantine` |
 | **Invalid timestamp handling** | Where `completed_timestamp < transaction_timestamp`, set `completed_timestamp_utc = NULL` after UTC normalization (row is otherwise valid) |
-| **Orphan FK check** | Critical transaction FKs such as `sender_account_id`, `device_id`, and `payment_method_id` must exist in parent tables; orphans are quarantined |
+| **Required FK presence** | Critical transaction FKs such as `sender_account_id`, `device_id`, and `payment_method_id` must not be NULL |
+| **Orphan FK check** | Critical transaction FKs such as `sender_account_id`, `device_id`, `payment_method_id`, and conditional `receiver_id` references must exist in parent tables; orphans are quarantined |
 | **Type casting** | All columns cast to correct Databricks types (STRING, DECIMAL, TIMESTAMP, BOOLEAN, etc.) |
 | **DQ flags** | Each Silver table adds `_dq_valid` (BOOLEAN) and `_dq_issues` (STRING) columns |
 
