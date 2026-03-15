@@ -87,6 +87,7 @@ for entity in entities:
         .csv(source_path)
         .withColumn("_ingest_ts", F.current_timestamp())
         .withColumn("_source_file", F.input_file_name())
+        .cache()
     )
 
     source_count = df_source.count()
@@ -114,6 +115,7 @@ for entity in entities:
         f"[{entity}] source_count={source_count:,} expected={expected_count:,} "
         f"target_count={target_count:,} match={is_match}"
     )
+    df_source.unpersist()
 
 # COMMAND ----------
 
