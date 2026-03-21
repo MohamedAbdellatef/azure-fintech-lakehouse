@@ -33,6 +33,27 @@ class GeneratorConfig:
     DUPLICATE_RATE: float = 0.01       # 1% duplicate transactions
     NEGATIVE_AMOUNT_RATE: float = 0.02  # 2% negative amounts (invalid)
     INVALID_TIMESTAMP_RATE: float = 0.01  # 1% invalid timestamps
+    NULL_ACCOUNT_ID_RATE: float = 0.005
+    DUPLICATE_ACCOUNT_ID_RATE: float = 0.01
+    ORPHAN_ACCOUNT_USER_RATE: float = 0.01
+    NEGATIVE_BALANCE_RATE: float = 0.02
+    INVALID_ACCOUNT_CURRENCY_RATE: float = 0.01
+    INVALID_ACCOUNT_STATUS_RATE: float = 0.01
+    INVALID_ACCOUNT_TYPE_RATE: float = 0.005
+    NULL_DEVICE_ID_RATE: float = 0.003
+    INVALID_DEVICE_TYPE_RATE: float = 0.01
+    ORPHAN_DEVICE_USER_RATE: float = 0.01
+    INVALID_DEVICE_TIME_ORDER_RATE: float = 0.01
+    NULL_MERCHANT_ID_RATE: float = 0.003
+    INVALID_MERCHANT_CATEGORY_RATE: float = 0.01
+    INVALID_MERCHANT_BUSINESS_TYPE_RATE: float = 0.01
+    INVALID_MERCHANT_COUNTRY_RATE: float = 0.01
+    NULL_PAYMENT_METHOD_ID_RATE: float = 0.003
+    INVALID_PAYMENT_METHOD_TYPE_RATE: float = 0.01
+    ORPHAN_PAYMENT_METHOD_USER_RATE: float = 0.01
+    BAD_LAST_FOUR_DIGITS_RATE: float = 0.01
+    INVALID_EXPIRY_DATE_RATE: float = 0.01
+    MULTI_DEFAULT_PAYMENT_RATE: float = 0.01
 
     # ===========================================
     # Fraud Pattern Rates

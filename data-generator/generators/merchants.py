@@ -66,6 +66,16 @@ CITIES_BY_COUNTRY = {
 }
 
 
+def _sample_indices(df: pd.DataFrame, rate: float, seed_offset: int, eligible_idx=None) -> pd.Index:
+    idx = df.index if eligible_idx is None else pd.Index(eligible_idx)
+    if rate <= 0 or len(idx) == 0:
+        return pd.Index([])
+
+    sample_size = max(1, int(len(idx) * rate))
+    sample_size = min(sample_size, len(idx))
+    return df.loc[idx].sample(n=sample_size, random_state=config.RANDOM_SEED + seed_offset).index
+
+
 def generate_merchant_name():
     """Generate an authentic MENA-style business name"""
     style = random.choice(['prefix', 'owner', 'location', 'modern'])
@@ -160,6 +170,18 @@ def generate_merchants(num_merchants: int = None, output_dir: str = None) -> pd.
         })
 
     df = pd.DataFrame(merchants)
+
+    null_merchant_idx = _sample_indices(df, config.NULL_MERCHANT_ID_RATE, 410)
+    df.loc[null_merchant_idx, "merchant_id"] = None
+
+    invalid_category_idx = _sample_indices(df, config.INVALID_MERCHANT_CATEGORY_RATE, 411)
+    df.loc[invalid_category_idx, "merchant_category"] = "Crypto Exchange"
+
+    invalid_business_type_idx = _sample_indices(df, config.INVALID_MERCHANT_BUSINESS_TYPE_RATE, 412)
+    df.loc[invalid_business_type_idx, "business_type"] = "partnership"
+
+    invalid_country_idx = _sample_indices(df, config.INVALID_MERCHANT_COUNTRY_RATE, 413)
+    df.loc[invalid_country_idx, "country"] = "XX"
 
     filepath = save_dataframe(
         df=df,

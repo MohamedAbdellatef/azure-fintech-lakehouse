@@ -12,6 +12,16 @@ from datetime import datetime
 from generators.io_utils import save_dataframe
 
 
+def _sample_indices(df: pd.DataFrame, rate: float, seed_offset: int, eligible_idx=None) -> pd.Index:
+    idx = df.index if eligible_idx is None else pd.Index(eligible_idx)
+    if rate <= 0 or len(idx) == 0:
+        return pd.Index([])
+
+    sample_size = max(1, int(len(idx) * rate))
+    sample_size = min(sample_size, len(idx))
+    return df.loc[idx].sample(n=sample_size, random_state=config.RANDOM_SEED + seed_offset).index
+
+
 def generate_payment_methods(users_df: pd.DataFrame, output_dir: str = None) -> pd.DataFrame:
     """
     Generate payment methods (cards, bank accounts) for users
@@ -101,6 +111,46 @@ def generate_payment_methods(users_df: pd.DataFrame, output_dir: str = None) -> 
             print(f"   -> {idx + 1:,} users processed...")
 
     df = pd.DataFrame(payment_methods)
+
+    null_payment_method_idx = _sample_indices(df, config.NULL_PAYMENT_METHOD_ID_RATE, 510)
+    df.loc[null_payment_method_idx, "payment_method_id"] = None
+
+    orphan_user_idx = _sample_indices(df, config.ORPHAN_PAYMENT_METHOD_USER_RATE, 511)
+    df.loc[orphan_user_idx, "user_id"] = [str(uuid.uuid4()) for _ in range(len(orphan_user_idx))]
+
+    bad_last_four_idx = _sample_indices(
+        df,
+        config.BAD_LAST_FOUR_DIGITS_RATE,
+        512,
+        eligible_idx=df.index[df["last_four_digits"].notna()],
+    )
+    df.loc[bad_last_four_idx, "last_four_digits"] = "12A"
+
+    invalid_expiry_idx = _sample_indices(
+        df,
+        config.INVALID_EXPIRY_DATE_RATE,
+        513,
+        eligible_idx=df.index[
+            df["method_type"].isin(["debit_card", "credit_card"]) & df["expiry_date"].notna()
+        ],
+    )
+    for idx in invalid_expiry_idx:
+        expiry_date = pd.to_datetime(df.at[idx, "expiry_date"])
+        df.at[idx, "expiry_date"] = (expiry_date - pd.Timedelta(days=365)).date()
+
+    multi_default_users = df.groupby("user_id").size().loc[lambda s: s > 1].index
+    multi_default_user_sample = _sample_indices(
+        pd.DataFrame(index=multi_default_users),
+        config.MULTI_DEFAULT_PAYMENT_RATE,
+        514,
+    )
+    for user_id in multi_default_user_sample.tolist():
+        user_rows = df.index[df["user_id"] == user_id]
+        if len(user_rows) > 1:
+            df.loc[user_rows[1], "is_default"] = True
+
+    invalid_method_type_idx = _sample_indices(df, config.INVALID_PAYMENT_METHOD_TYPE_RATE, 515)
+    df.loc[invalid_method_type_idx, "method_type"] = "crypto_wallet"
 
     filepath = save_dataframe(
         df=df,

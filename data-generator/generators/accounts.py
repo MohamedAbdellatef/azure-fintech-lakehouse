@@ -12,6 +12,16 @@ from datetime import datetime
 from generators.io_utils import save_dataframe
 
 
+def _sample_indices(df: pd.DataFrame, rate: float, seed_offset: int, eligible_idx=None) -> pd.Index:
+    idx = df.index if eligible_idx is None else pd.Index(eligible_idx)
+    if rate <= 0 or len(idx) == 0:
+        return pd.Index([])
+
+    sample_size = max(1, int(len(idx) * rate))
+    sample_size = min(sample_size, len(idx))
+    return df.loc[idx].sample(n=sample_size, random_state=config.RANDOM_SEED + seed_offset).index
+
+
 def generate_accounts(users_df: pd.DataFrame, output_dir: str = None) -> pd.DataFrame:
     """
     Generate account/wallet data - each user gets 1-2 accounts
@@ -73,6 +83,42 @@ def generate_accounts(users_df: pd.DataFrame, output_dir: str = None) -> pd.Data
             print(f"   -> {idx + 1:,} users processed...")
 
     df = pd.DataFrame(accounts)
+
+    null_account_idx = _sample_indices(df, config.NULL_ACCOUNT_ID_RATE, 210)
+    df.loc[null_account_idx, "account_id"] = None
+
+    duplicate_idx = _sample_indices(
+        df,
+        config.DUPLICATE_ACCOUNT_ID_RATE,
+        211,
+        eligible_idx=df.index.difference(null_account_idx),
+    )
+    duplicate_donor_idx = _sample_indices(
+        df,
+        config.DUPLICATE_ACCOUNT_ID_RATE,
+        212,
+        eligible_idx=df.index.difference(duplicate_idx).difference(null_account_idx),
+    )
+    if len(duplicate_idx) > 0 and len(duplicate_donor_idx) > 0:
+        donor_ids = df.loc[duplicate_donor_idx, "account_id"].tolist()
+        if len(donor_ids) < len(duplicate_idx):
+            donor_ids = (donor_ids * ((len(duplicate_idx) // len(donor_ids)) + 1))[:len(duplicate_idx)]
+        df.loc[duplicate_idx, "account_id"] = donor_ids[:len(duplicate_idx)]
+
+    orphan_user_idx = _sample_indices(df, config.ORPHAN_ACCOUNT_USER_RATE, 213)
+    df.loc[orphan_user_idx, "user_id"] = [str(uuid.uuid4()) for _ in range(len(orphan_user_idx))]
+
+    negative_balance_idx = _sample_indices(df, config.NEGATIVE_BALANCE_RATE, 214)
+    df.loc[negative_balance_idx, "balance"] = -df.loc[negative_balance_idx, "balance"].abs()
+
+    invalid_currency_idx = _sample_indices(df, config.INVALID_ACCOUNT_CURRENCY_RATE, 215)
+    df.loc[invalid_currency_idx, "currency"] = "USD"
+
+    invalid_status_idx = _sample_indices(df, config.INVALID_ACCOUNT_STATUS_RATE, 216)
+    df.loc[invalid_status_idx, "status"] = "suspended"
+
+    invalid_type_idx = _sample_indices(df, config.INVALID_ACCOUNT_TYPE_RATE, 217)
+    df.loc[invalid_type_idx, "account_type"] = "Checking"
 
     filepath = save_dataframe(
         df=df,
