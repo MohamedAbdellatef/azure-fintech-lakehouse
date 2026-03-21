@@ -215,3 +215,6 @@ __pycache__/
 # Keep commit-friendly sample outputs tracked
 !data-generator/output_sample/
 !data-generator/output_sample/*.csv
+
+# Local private notes
+private_notes/

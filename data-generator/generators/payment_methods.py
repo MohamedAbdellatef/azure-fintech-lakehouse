@@ -136,7 +136,8 @@ def generate_payment_methods(users_df: pd.DataFrame, output_dir: str = None) -> 
     )
     for idx in invalid_expiry_idx:
         expiry_date = pd.to_datetime(df.at[idx, "expiry_date"])
-        df.at[idx, "expiry_date"] = (expiry_date - pd.Timedelta(days=365)).date()
+        invalid_expiry = expiry_date - pd.Timedelta(days=random.randint(365 * 3, 365 * 7))
+        df.at[idx, "expiry_date"] = invalid_expiry.date()
 
     multi_default_users = df.groupby("user_id").size().loc[lambda s: s > 1].index
     multi_default_user_sample = _sample_indices(
