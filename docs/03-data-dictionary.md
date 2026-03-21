@@ -24,10 +24,10 @@
 | Table | Primary Key / ID | Row Count | Columns | Intentional Noise | BRD Usage |
 |---|---|---:|---:|---|---|
 | `users` | `user_id` | 50,000 | 16 | email NULL ~5%, phone NULL ~3% | Q3, Q9-Q12, KPI-08, KPI-09 |
-| `merchants` | `merchant_id` | 2,000 | 14 | None | Q1, Q8, KPI-01, KPI-02 |
-| `accounts` | `account_id` | 62,416 | 10 | None | Q5, Q8 (newly funded wallets) |
-| `devices` | `device_id` | 82,630 | 11 | None | Q5, Q13-Q15, KPI-06 |
-| `payment_methods` | `payment_method_id` | 85,185 | 12 | last_four_digits NULL ~15%, expiry NULL ~40% | Q2, KPI-04, KPI-10 |
+| `merchants` | `merchant_id` | 2,000 | 14 | null PK small rate, invalid category/business type/country ~1% | Q1, Q8, KPI-01, KPI-02 |
+| `accounts` | `account_id` | 62,416 | 10 | null/duplicate PK small rates, orphan `user_id` ~1%, negative balance ~2%, invalid enums ~0.5%-1% | Q5, Q8 (newly funded wallets) |
+| `devices` | `device_id` | 82,630 | 11 | null PK small rate, orphan `user_id` ~1%, invalid `device_type` ~1%, invalid time order ~1% | Q5, Q13-Q15, KPI-06 |
+| `payment_methods` | `payment_method_id` | 85,185 | 12 | last_four_digits NULL ~15%, expiry NULL ~40%, null PK small rate, orphan `user_id` ~1%, invalid type/digits/expiry/defaults small rates | Q2, KPI-04, KPI-10 |
 | `kyc_records` | `kyc_id` | 50,000 | 14 | document_number_hash NULL ~2%, many conditional NULLs | Q7, KPI-09 |
 | `transactions` | `transaction_id` (not unique in Bronze) | 1,010,000 | 20 | Duplicate IDs ~1%, negative amounts ~2%, bad timestamps ~1% | All KPIs, Q1-Q15 |
 
@@ -225,8 +225,25 @@
 | Duplicate transaction IDs | `transactions` | `transaction_id` | ~1% (10,000 rows) | Dedup - keep row with earliest `transaction_timestamp` |
 | Negative amounts | `transactions` | `amount` | ~2% (20,115 rows) | Quarantine to `dq_quarantine` |
 | Invalid timestamp order | `transactions` | `completed < transaction` | ~1% (11,044 rows) | Set `completed_timestamp` to NULL (row is otherwise valid) |
+| Null account IDs | `accounts` | `account_id` | ~0.5% | Quarantine to `dq_quarantine` |
+| Duplicate account IDs | `accounts` | `account_id` | ~1% | Quarantine to `dq_quarantine` |
+| Orphan account owners | `accounts` | `user_id` | ~1% | Quarantine to `dq_quarantine` |
+| Negative balances | `accounts` | `balance` | ~2% | Warning only - retain with DQ flags |
+| Invalid account enums | `accounts` | `currency`, `status`, `account_type` | ~0.5%-1% each | Quarantine to `dq_quarantine` |
+| Null device IDs | `devices` | `device_id` | ~0.3% | Quarantine to `dq_quarantine` |
+| Orphan device owners | `devices` | `user_id` | ~1% | Quarantine to `dq_quarantine` |
+| Invalid device type | `devices` | `device_type` | ~1% | Quarantine to `dq_quarantine` |
+| Invalid device time order | `devices` | `first_seen_at > last_seen_at` | ~1% | Warning only - retain with DQ flags |
+| Null merchant IDs | `merchants` | `merchant_id` | ~0.3% | Quarantine to `dq_quarantine` |
+| Invalid merchant enums | `merchants` | `merchant_category`, `business_type`, `country` | ~1% each | Quarantine to `dq_quarantine` |
 | NULL emails | `users` | `email` | ~5% (2,535 rows) | Pass through (nullable field) |
 | NULL phone numbers | `users` | `phone_number` | ~3% (1,533 rows) | Pass through (nullable field) |
+| Null payment method IDs | `payment_methods` | `payment_method_id` | ~0.3% | Quarantine to `dq_quarantine` |
+| Orphan payment method owners | `payment_methods` | `user_id` | ~1% | Quarantine to `dq_quarantine` |
+| Invalid payment method type | `payment_methods` | `method_type` | ~1% | Quarantine to `dq_quarantine` |
+| Bad payment last four digits | `payment_methods` | `last_four_digits` | ~1% | Warning only - retain with DQ flags |
+| Invalid payment expiry | `payment_methods` | `expiry_date` | ~1% | Warning only - retain with DQ flags |
+| Multiple default methods | `payment_methods` | `is_default` | ~1% of multi-method users | Warning only - retain with DQ flags |
 | NULL doc hash | `kyc_records` | `document_number_hash` | ~2% (1,039 rows) | Pass through (nullable field) |
 
 ---

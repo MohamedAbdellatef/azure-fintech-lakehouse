@@ -13,6 +13,16 @@ from datetime import datetime
 from generators.io_utils import save_dataframe
 
 
+def _sample_indices(df: pd.DataFrame, rate: float, seed_offset: int, eligible_idx=None) -> pd.Index:
+    idx = df.index if eligible_idx is None else pd.Index(eligible_idx)
+    if rate <= 0 or len(idx) == 0:
+        return pd.Index([])
+
+    sample_size = max(1, int(len(idx) * rate))
+    sample_size = min(sample_size, len(idx))
+    return df.loc[idx].sample(n=sample_size, random_state=config.RANDOM_SEED + seed_offset).index
+
+
 def generate_device_fingerprint() -> str:
     """Generate a realistic device fingerprint hash"""
     components = [
@@ -103,6 +113,20 @@ def generate_devices(users_df: pd.DataFrame, output_dir: str = None) -> pd.DataF
             print(f"   -> {idx + 1:,} users processed...")
 
     df = pd.DataFrame(devices)
+
+    null_device_idx = _sample_indices(df, config.NULL_DEVICE_ID_RATE, 310)
+    df.loc[null_device_idx, "device_id"] = None
+
+    invalid_type_idx = _sample_indices(df, config.INVALID_DEVICE_TYPE_RATE, 311)
+    df.loc[invalid_type_idx, "device_type"] = "tablet"
+
+    orphan_user_idx = _sample_indices(df, config.ORPHAN_DEVICE_USER_RATE, 312)
+    df.loc[orphan_user_idx, "user_id"] = [str(uuid.uuid4()) for _ in range(len(orphan_user_idx))]
+
+    invalid_time_idx = _sample_indices(df, config.INVALID_DEVICE_TIME_ORDER_RATE, 313)
+    for idx in invalid_time_idx:
+        first_seen = pd.to_datetime(df.at[idx, "first_seen_at"])
+        df.at[idx, "last_seen_at"] = first_seen - pd.Timedelta(hours=1)
 
     filepath = save_dataframe(
         df=df,

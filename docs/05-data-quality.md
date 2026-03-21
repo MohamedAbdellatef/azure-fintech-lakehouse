@@ -87,21 +87,21 @@
 
 | Rule ID | Severity | Column(s) | Logic | Bronze | Silver |
 |---|---|---|---|---|---|
-| ACC-001 | Critical | `account_id` | Unique + NOT NULL | 100% | 100% |
-| ACC-002 | Critical | `user_id` | FK exists in `users` | 100% | 100% |
-| ACC-003 | Warning | `balance` | `>= 0` | 100% | 100% |
-| ACC-004 | Critical | `currency` | IN (`EGP`, `SAR`, `AED`, `KWD`, `QAR`) | 100% | 100% |
-| ACC-005 | Critical | `status` | IN (`active`, `frozen`) | 100% | 100% |
-| ACC-006 | Critical | `account_type` | IN (`Wallet`, `Savings`) | 100% | 100% |
+| ACC-001 | Critical | `account_id` | Unique + NOT NULL | ~98.5% | 100% |
+| ACC-002 | Critical | `user_id` | FK exists in `users` | ~99% | 100% |
+| ACC-003 | Warning | `balance` | `>= 0` | ~98% | 100% |
+| ACC-004 | Critical | `currency` | IN (`EGP`, `SAR`, `AED`, `KWD`, `QAR`) | ~99% | 100% |
+| ACC-005 | Critical | `status` | IN (`active`, `frozen`) | ~99% | 100% |
+| ACC-006 | Critical | `account_type` | IN (`Wallet`, `Savings`) | ~99.5% | 100% |
 
 ### 3.4 `merchants` (7 rules)
 
 | Rule ID | Severity | Column(s) | Logic | Bronze | Silver |
 |---|---|---|---|---|---|
-| MER-001 | Critical | `merchant_id` | Unique + NOT NULL | 100% | 100% |
-| MER-002 | Critical | `merchant_category` | IN (8 categories: `Retail`, `Food & Beverage`, `Utilities`, `Travel`, `E-commerce`, `Gaming`, `Healthcare`, `Education`) | 100% | 100% |
-| MER-003 | Critical | `business_type` | IN (`individual`, `company`, `enterprise`) | 100% | 100% |
-| MER-004 | Critical | `country` | IN (`EG`, `SA`, `AE`, `KW`, `QA`) | 100% | 100% |
+| MER-001 | Critical | `merchant_id` | Unique + NOT NULL | ~99.7% | 100% |
+| MER-002 | Critical | `merchant_category` | IN (8 categories: `Retail`, `Food & Beverage`, `Utilities`, `Travel`, `E-commerce`, `Gaming`, `Healthcare`, `Education`) | ~99% | 100% |
+| MER-003 | Critical | `business_type` | IN (`individual`, `company`, `enterprise`) | ~99% | 100% |
+| MER-004 | Critical | `country` | IN (`EG`, `SA`, `AE`, `KW`, `QA`) | ~99% | 100% |
 | MER-005 | Warning | `risk_score` | Between 0.000 and 1.000 | 100% | 100% |
 | MER-006 | Warning | `fee_percentage` | Between 1.50 and 3.50 | 100% | 100% |
 | MER-007 | Warning | `monthly_limit` | `> 0` | 100% | 100% |
@@ -110,21 +110,21 @@
 
 | Rule ID | Severity | Column(s) | Logic | Bronze | Silver |
 |---|---|---|---|---|---|
-| DEV-001 | Critical | `device_id` | Unique + NOT NULL | 100% | 100% |
-| DEV-002 | Critical | `user_id` | FK exists in `users` | 100% | 100% |
-| DEV-003 | Critical | `device_type` | IN (`ios`, `android`, `web`) | 100% | 100% |
-| DEV-004 | Warning | `first_seen_at`, `last_seen_at` | `first_seen_at <= last_seen_at` | 100% | 100% |
+| DEV-001 | Critical | `device_id` | Unique + NOT NULL | ~99.7% | 100% |
+| DEV-002 | Critical | `user_id` | FK exists in `users` | ~99% | 100% |
+| DEV-003 | Critical | `device_type` | IN (`ios`, `android`, `web`) | ~99% | 100% |
+| DEV-004 | Warning | `first_seen_at`, `last_seen_at` | `first_seen_at <= last_seen_at` | ~99% | 100% |
 
 ### 3.6 `payment_methods` (6 rules)
 
 | Rule ID | Severity | Column(s) | Logic | Bronze | Silver |
 |---|---|---|---|---|---|
-| PAY-001 | Critical | `payment_method_id` | Unique + NOT NULL | 100% | 100% |
-| PAY-002 | Critical | `user_id` | FK exists in `users` | 100% | 100% |
-| PAY-003 | Critical | `method_type` | IN (`debit_card`, `credit_card`, `bank_account`, `wallet_balance`) | 100% | 100% |
-| PAY-004 | Warning | `last_four_digits` | 4 digits required for `debit_card`, `credit_card`, `bank_account`; NULL allowed only for `wallet_balance` | 100% | 100% |
-| PAY-005 | Warning | `expiry_date` | NULL or future date; NULL allowed for `bank_account` and `wallet_balance` | 100% | 100% |
-| PAY-006 | Warning | `is_default` | At most one default method per `user_id` | 100% | 100% |
+| PAY-001 | Critical | `payment_method_id` | Unique + NOT NULL | ~99.7% | 100% |
+| PAY-002 | Critical | `user_id` | FK exists in `users` | ~99% | 100% |
+| PAY-003 | Critical | `method_type` | IN (`debit_card`, `credit_card`, `bank_account`, `wallet_balance`) | ~99% | 100% |
+| PAY-004 | Warning | `last_four_digits` | 4 digits required for `debit_card`, `credit_card`, `bank_account`; NULL allowed only for `wallet_balance` | ~99% | 100% |
+| PAY-005 | Warning | `expiry_date` | NULL or future date; NULL allowed for `bank_account` and `wallet_balance` | ~99% | 100% |
+| PAY-006 | Warning | `is_default` | At most one default method per `user_id` | ~99% | 100% |
 
 ### 3.7 `kyc_records` (7 rules)
 
@@ -215,10 +215,10 @@ Rows failing only **Warning** rules remain in Silver with DQ flags:
 |---|---|---|
 | `transactions` | ~2% (~20,000 rows) | Negative amounts (~20K); duplicates are corrected, not quarantined |
 | `users` | ~0% | No critical noise injected |
-| `accounts` | ~0% | No critical noise injected |
-| `merchants` | ~0% | No critical noise injected |
-| `devices` | ~0% | No critical noise injected |
-| `payment_methods` | ~0% | No critical noise injected |
+| `accounts` | ~4% | Null/duplicate PKs, orphan `user_id`, invalid enums; negative balance remains warning-only |
+| `merchants` | ~3% | Null PK plus invalid category/business type/country |
+| `devices` | ~2% | Null PK, orphan `user_id`, invalid `device_type`; invalid time order remains warning-only |
+| `payment_methods` | ~2% | Null PK, orphan `user_id`, invalid `method_type`; digit/expiry/default issues remain warning-only |
 | `kyc_records` | ~0% | No critical noise (NULL doc_hash is Warning, not Critical) |
 
 ---
