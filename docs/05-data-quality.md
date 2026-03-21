@@ -26,11 +26,11 @@
 | Area | Bronze (Raw) | Silver (Cleansed) | Action |
 |---|---|---|---|
 | Duplicate PKs | ~1% (10,000 dups) | 0% - unique | Dedup: keep row with earliest `transaction_timestamp` |
-| Negative amounts | ~2% (20,115 rows) | 0% - all positive | Quarantine to `dq_quarantine` |
-| Invalid timestamp order | ~1% (11,044 rows) | Corrected | Set `completed_timestamp_utc = NULL` after UTC normalization (row otherwise valid) |
-| NULL emails | ~5% (2,535 rows) | Pass through | Nullable field - no action needed |
-| NULL phone numbers | ~3% (1,533 rows) | Pass through | Nullable field - no action needed |
-| NULL doc hash | ~2% (1,039 rows) | Pass through | Nullable field - no action needed |
+| Negative amounts | ~2% (roughly 20K rows) | 0% - all positive | Quarantine to `dq_quarantine` |
+| Invalid timestamp order | ~1% (roughly 11K rows) | Corrected | Set `completed_timestamp_utc = NULL` after UTC normalization (row otherwise valid) |
+| NULL emails | ~5% (roughly 2.5K rows) | Pass through | Nullable field - no action needed |
+| NULL phone numbers | ~3% (roughly 1.5K rows) | Pass through | Nullable field - no action needed |
+| NULL doc hash | ~2% (roughly 1K rows) | Pass through | Nullable field - no action needed |
 | Enum conformance | Raw generator values | Strict enforcement | Quarantine if value not in accepted set |
 | Timestamps | Naive (no timezone) | UTC normalized | Cast + apply BRD Section 5.4 rules |
 | Fraud labels | ~3% flagged | Preserved | Validated: `is_flagged = True` must have `fraud_pattern` |
@@ -213,7 +213,7 @@ Rows failing only **Warning** rules remain in Silver with DQ flags:
 
 | Entity | Expected Quarantine Rate | Primary Cause |
 |---|---|---|
-| `transactions` | ~2% (~20,000 rows) | Negative amounts (~20K); duplicates are corrected, not quarantined |
+| `transactions` | ~2% (roughly 20K rows) | Negative amounts (roughly 20K); duplicates are corrected, not quarantined |
 | `users` | ~0% | No critical noise injected |
 | `accounts` | ~4% | Null/duplicate PKs, orphan `user_id`, invalid enums; negative balance remains warning-only |
 | `merchants` | ~3% | Null PK plus invalid category/business type/country |
@@ -296,8 +296,8 @@ tests:
 | Cross-Reference | This Doc | Data Dictionary |
 |---|---|---|
 | Dup PK count | 10,000 | 10,000 (Section 4) |
-| Negative amount count | 20,115 | 20,115 (Section 4) |
-| Bad timestamp count | 11,044 | 11,044 (Section 4) |
+| Negative amount count | Roughly 20K | Roughly 20K (Section 4) |
+| Bad timestamp count | Roughly 11K | Roughly 11K (Section 4) |
 | Dedup strategy | Keep earliest `transaction_timestamp` | Keep earliest `transaction_timestamp` (Section 5) |
 | Invalid timestamp action | Set `completed_timestamp_utc = NULL` | Set `completed_timestamp_utc = NULL` (Section 5) |
 | Quarantine table schema | Section 4.4 | Matches `dq_quarantine` in Data Model Section 5.2 |

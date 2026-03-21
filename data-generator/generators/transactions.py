@@ -95,19 +95,58 @@ def generate_transactions(
 
     print(f"Generating {total:,} Transactions in chunks of {chunk_sz:,}...")
 
-    # Pre-load IDs for fast random selection
-    account_ids = accounts_df['account_id'].tolist()
-    merchant_ids = merchants_df['merchant_id'].tolist()
-    device_ids = devices_df['device_id'].tolist()
+    valid_account_rows = accounts_df[
+        accounts_df["account_id"].notna()
+        & accounts_df["currency"].isin(list(config.CURRENCY_MAP.values()))
+        & accounts_df["status"].isin(["active", "frozen"])
+        & accounts_df["account_type"].isin(["Wallet", "Savings"])
+    ].drop_duplicates(subset=["account_id"])
+    valid_merchant_rows = merchants_df[
+        merchants_df["merchant_id"].notna()
+        & merchants_df["merchant_category"].isin(config.MERCHANT_CATEGORIES)
+        & merchants_df["business_type"].isin(["individual", "company", "enterprise"])
+        & merchants_df["country"].isin(config.COUNTRIES)
+    ].drop_duplicates(subset=["merchant_id"])
+    valid_device_rows = devices_df[
+        devices_df["device_id"].notna()
+        & devices_df["device_type"].isin(config.DEVICE_TYPES)
+    ].copy()
+    valid_device_rows["first_seen_at"] = pd.to_datetime(valid_device_rows["first_seen_at"], errors="coerce")
+    valid_device_rows["last_seen_at"] = pd.to_datetime(valid_device_rows["last_seen_at"], errors="coerce")
+    valid_device_rows = valid_device_rows[
+        valid_device_rows["first_seen_at"].notna()
+        & valid_device_rows["last_seen_at"].notna()
+        & (valid_device_rows["last_seen_at"] >= valid_device_rows["first_seen_at"])
+    ].drop_duplicates(subset=["device_id"])
+    valid_payment_method_rows = payment_methods_df[
+        payment_methods_df["payment_method_id"].notna()
+        & payment_methods_df["method_type"].isin(
+            ["debit_card", "credit_card", "bank_account", "wallet_balance"]
+        )
+    ].drop_duplicates(subset=["payment_method_id"])
+
+    if valid_account_rows.empty:
+        raise ValueError("No valid accounts available to generate transactions.")
+    if valid_merchant_rows.empty:
+        raise ValueError("No valid merchants available to generate transactions.")
+    if valid_device_rows.empty:
+        raise ValueError("No valid devices available to generate transactions.")
+    if valid_payment_method_rows.empty:
+        raise ValueError("No valid payment methods available to generate transactions.")
+
+    # Pre-load IDs for fast random selection from valid parent records only.
+    account_ids = valid_account_rows["account_id"].tolist()
+    merchant_ids = valid_merchant_rows["merchant_id"].tolist()
+    device_ids = valid_device_rows["device_id"].tolist()
 
     # Build user->device mapping for realistic device selection
-    user_devices = devices_df.groupby(
+    user_devices = valid_device_rows.groupby(
         'user_id')['device_id'].apply(list).to_dict()
-    account_users = accounts_df.set_index('account_id')['user_id'].to_dict()
-    account_currencies = accounts_df.set_index('account_id')['currency'].to_dict()
-    user_payment_methods = payment_methods_df.groupby(
+    account_users = valid_account_rows.set_index('account_id')['user_id'].to_dict()
+    account_currencies = valid_account_rows.set_index('account_id')['currency'].to_dict()
+    user_payment_methods = valid_payment_method_rows.groupby(
         'user_id')['payment_method_id'].apply(list).to_dict()
-    all_payment_method_ids = payment_methods_df['payment_method_id'].tolist()
+    all_payment_method_ids = valid_payment_method_rows['payment_method_id'].tolist()
 
     if not all_payment_method_ids:
         raise ValueError("payment_methods_df is empty; cannot assign payment_method_id")
