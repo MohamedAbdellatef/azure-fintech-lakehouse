@@ -1,6 +1,23 @@
 -- ============================================================
--- DDL: fintech_oltp.source (PostgreSQL 17)
+-- DDL: fintech_oltp.source
 -- ============================================================
+
+-- NOTE:
+-- This schema intentionally does not enforce primary keys, foreign keys,
+-- or strict business constraints.
+--
+-- The source layer simulates an imperfect operational fintech system.
+-- The Python generator intentionally injects dirty data such as:
+-- - duplicate IDs
+-- - null or malformed keys
+-- - orphaned references
+-- - negative amounts
+-- - invalid timestamps
+-- - inconsistent statuses
+--
+-- These issues are preserved in the source and raw landing layers so they
+-- can be detected and handled later in the Silver data quality layer.
+
 
 -- 1) Database
 -- (Run this manually if needed: CREATE DATABASE fintech_oltp;)
@@ -9,7 +26,6 @@
 CREATE SCHEMA IF NOT EXISTS source;
 
 -- 3) Drop existing tables (idempotent re-run)
-DROP TABLE IF EXISTS source.ingestion_control   CASCADE;
 DROP TABLE IF EXISTS source.transactions        CASCADE;
 DROP TABLE IF EXISTS source.kyc_records         CASCADE;
 DROP TABLE IF EXISTS source.payment_methods     CASCADE;
@@ -59,7 +75,7 @@ CREATE TABLE source.merchants (
 );
 
 -- ============================================================
--- CHILD ENTITIES (FK references — NOT ENFORCED)
+-- CHILD ENTITIES (FK references - NOT ENFORCED)
 -- ============================================================
 
 CREATE TABLE source.accounts (
@@ -144,28 +160,6 @@ CREATE TABLE source.transactions (
     created_at            TIMESTAMP      NOT NULL
 );
 
--- ============================================================
--- WATERMARK CONTROL TABLE (for ADF incremental ingestion)
--- ============================================================
-
-CREATE TABLE source.ingestion_control (
-    entity_name    VARCHAR(50)   PRIMARY KEY,
-    source_table   VARCHAR(100)  NOT NULL,
-    watermark_col  VARCHAR(50)   NOT NULL,
-    last_watermark TIMESTAMP     NOT NULL DEFAULT '1900-01-01 00:00:00',
-    last_run_ts    TIMESTAMP,
-    rows_ingested  INTEGER       DEFAULT 0
-);
-
-INSERT INTO source.ingestion_control (entity_name, source_table, watermark_col) VALUES
-    ('users',           'source.users',           'updated_at'),
-    ('merchants',       'source.merchants',       'updated_at'),
-    ('accounts',        'source.accounts',        'updated_at'),
-    ('devices',         'source.devices',         'last_seen_at'),
-    ('payment_methods', 'source.payment_methods', 'updated_at'),
-    ('kyc_records',     'source.kyc_records',     'updated_at'),
-    ('transactions',    'source.transactions',    'transaction_timestamp')
-ON CONFLICT (entity_name) DO NOTHING;
 
 -- ============================================================
 -- Verification
