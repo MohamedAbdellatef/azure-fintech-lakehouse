@@ -1,0 +1,255 @@
+{
+    "name": "PL_Load_Entity_Incremental",
+    "properties": {
+        "activities": [
+            {
+                "name": "LKP_Get_Old_Watermark",
+                "type": "Lookup",
+                "dependsOn": [],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "source": {
+                        "type": "AzurePostgreSqlSource",
+                        "query": {
+                            "value": "@concat(\r\n'SELECT last_watermark::text AS old_watermark FROM control.ingestion_control WHERE entity_name = ''',\r\npipeline().parameters.entity,\r\n''' AND is_active = true'\r\n)",
+                            "type": "Expression"
+                        },
+                        "partitionOption": "None",
+                        "queryTimeout": "02:00:00"
+                    },
+                    "dataset": {
+                        "referenceName": "DS_PG_Source_Table",
+                        "type": "DatasetReference",
+                        "parameters": {
+                            "schema": "control",
+                            "table": "ingestion_control"
+                        }
+                    }
+                }
+            },
+            {
+                "name": "LKP_Get_New_Watermark",
+                "type": "Lookup",
+                "dependsOn": [
+                    {
+                        "activity": "LKP_Get_Old_Watermark",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "source": {
+                        "type": "AzurePostgreSqlSource",
+                        "query": {
+                            "value": "@concat(\n'SELECT MAX(', pipeline().parameters.watermark_col, ')::text AS new_watermark FROM ',\npipeline().parameters.source_schema, '.', pipeline().parameters.source_table,\n' WHERE ', pipeline().parameters.watermark_col, ' > ''',\nactivity('LKP_Get_Old_Watermark').output.firstRow.old_watermark,\n''''\n)",
+                            "type": "Expression"
+                        },
+                        "partitionOption": "None",
+                        "queryTimeout": "02:00:00"
+                    },
+                    "dataset": {
+                        "referenceName": "DS_PG_Source_Table",
+                        "type": "DatasetReference",
+                        "parameters": {
+                            "schema": {
+                                "value": "@pipeline().parameters.source_schema",
+                                "type": "Expression"
+                            },
+                            "table": {
+                                "value": "@pipeline().parameters.source_table",
+                                "type": "Expression"
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "name": "IF_New_Watermark_Exists",
+                "type": "IfCondition",
+                "dependsOn": [
+                    {
+                        "activity": "LKP_Get_New_Watermark",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "expression": {
+                        "value": "@not(empty(activity('LKP_Get_New_Watermark').output.firstRow.new_watermark))",
+                        "type": "Expression"
+                    },
+                    "ifTrueActivities": [
+                        {
+                            "name": "CPY_PG_Table_To_ADLS_Raw_Incremental",
+                            "type": "Copy",
+                            "dependsOn": [],
+                            "policy": {
+                                "timeout": "0.12:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "source": {
+                                    "type": "AzurePostgreSqlSource",
+                                    "query": {
+                                        "value": "@concat(\n'SELECT * FROM ',\npipeline().parameters.source_schema, '.', pipeline().parameters.source_table,\n' WHERE ', pipeline().parameters.watermark_col, ' > ''',\nactivity('LKP_Get_Old_Watermark').output.firstRow.old_watermark,\n''' AND ', pipeline().parameters.watermark_col, ' <= ''',\nactivity('LKP_Get_New_Watermark').output.firstRow.new_watermark,\n''''\n)",
+                                        "type": "Expression"
+                                    },
+                                    "partitionOption": "None",
+                                    "queryTimeout": "02:00:00"
+                                },
+                                "sink": {
+                                    "type": "DelimitedTextSink",
+                                    "storeSettings": {
+                                        "type": "AzureBlobFSWriteSettings"
+                                    },
+                                    "formatSettings": {
+                                        "type": "DelimitedTextWriteSettings",
+                                        "quoteAllText": true,
+                                        "fileExtension": ".csv"
+                                    }
+                                },
+                                "enableStaging": false,
+                                "translator": {
+                                    "type": "TabularTranslator",
+                                    "typeConversion": true,
+                                    "typeConversionSettings": {
+                                        "allowDataTruncation": true,
+                                        "treatBooleanAsNumber": false
+                                    }
+                                }
+                            },
+                            "inputs": [
+                                {
+                                    "referenceName": "DS_PG_Source_Table",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "schema": {
+                                            "value": "@pipeline().parameters.source_schema",
+                                            "type": "Expression"
+                                        },
+                                        "table": {
+                                            "value": "@pipeline().parameters.source_table",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "referenceName": "DS_ADLS_Raw_CSV",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "entity": {
+                                            "value": "@pipeline().parameters.entity",
+                                            "type": "Expression"
+                                        },
+                                        "load_type": {
+                                            "value": "@pipeline().parameters.load_type",
+                                            "type": "Expression"
+                                        },
+                                        "run_date": "@formatDateTime(utcNow(),'yyyy-MM-dd')",
+                                        "run_id": {
+                                            "value": "@pipeline().RunId",
+                                            "type": "Expression"
+                                        },
+                                        "file_name": {
+                                            "value": "@pipeline().parameters.file_name",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "SQL_Update_Watermark",
+                            "type": "Script",
+                            "dependsOn": [
+                                {
+                                    "activity": "CPY_PG_Table_To_ADLS_Raw_Incremental",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "timeout": "0.12:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "linkedServiceName": {
+                                "referenceName": "LS_PostgreSQL_FintechSource",
+                                "type": "LinkedServiceReference"
+                            },
+                            "typeProperties": {
+                                "scripts": [
+                                    {
+                                        "type": "Query",
+                                        "text": {
+                                            "value": "@concat(\n    'UPDATE control.ingestion_control SET last_watermark = ''',\n    activity('LKP_Get_New_Watermark').output.firstRow.new_watermark,\n    ''', last_run_id = ''',\n    pipeline().RunId,\n    ''', last_run_status = ''success'', last_run_ts = CURRENT_TIMESTAMP, rows_ingested = ',\n    string(activity('CPY_PG_Table_To_ADLS_Raw_Incremental').output.rowsCopied),\n    ', updated_at = CURRENT_TIMESTAMP WHERE entity_name = ''',\n    pipeline().parameters.entity,\n    ''' AND is_active = true'\n)",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                ],
+                                "scriptBlockExecutionTimeout": "02:00:00"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "parameters": {
+            "entity": {
+                "type": "string",
+                "defaultValue": "users"
+            },
+            "source_schema": {
+                "type": "string",
+                "defaultValue": "source"
+            },
+            "source_table": {
+                "type": "string",
+                "defaultValue": "users"
+            },
+            "load_type": {
+                "type": "string",
+                "defaultValue": "incremental"
+            },
+            "watermark_col": {
+                "type": "string",
+                "defaultValue": "updated_at"
+            },
+            "file_name": {
+                "type": "string",
+                "defaultValue": "users.csv"
+            }
+        },
+        "annotations": [],
+        "lastPublishTime": "2026-04-29T17:18:40Z"
+    },
+    "type": "Microsoft.DataFactory/factories/pipelines"
+}

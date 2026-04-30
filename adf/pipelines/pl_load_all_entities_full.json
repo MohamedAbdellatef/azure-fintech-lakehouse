@@ -1,0 +1,151 @@
+{
+    "name": "PL_Load_All_Entities_Full",
+    "properties": {
+        "activities": [
+            {
+                "name": "FE_Load_All_Entities_Full",
+                "type": "ForEach",
+                "dependsOn": [],
+                "userProperties": [],
+                "typeProperties": {
+                    "items": {
+                        "value": "@pipeline().parameters.tables_config",
+                        "type": "Expression"
+                    },
+                    "isSequential": true,
+                    "activities": [
+                        {
+                            "name": "CPY_PG_Table_To_ADLS_Raw_Full",
+                            "type": "Copy",
+                            "dependsOn": [],
+                            "policy": {
+                                "timeout": "0.12:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "source": {
+                                    "type": "AzurePostgreSqlSource",
+                                    "partitionOption": "None",
+                                    "queryTimeout": "02:00:00"
+                                },
+                                "sink": {
+                                    "type": "DelimitedTextSink",
+                                    "storeSettings": {
+                                        "type": "AzureBlobFSWriteSettings"
+                                    },
+                                    "formatSettings": {
+                                        "type": "DelimitedTextWriteSettings",
+                                        "quoteAllText": true,
+                                        "fileExtension": ".csv"
+                                    }
+                                },
+                                "enableStaging": false,
+                                "translator": {
+                                    "type": "TabularTranslator",
+                                    "typeConversion": true,
+                                    "typeConversionSettings": {
+                                        "allowDataTruncation": true,
+                                        "treatBooleanAsNumber": false
+                                    }
+                                }
+                            },
+                            "inputs": [
+                                {
+                                    "referenceName": "DS_PG_Source_Table",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "schema": {
+                                            "value": "@item().source_schema",
+                                            "type": "Expression"
+                                        },
+                                        "table": {
+                                            "value": "@item().source_table",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "referenceName": "DS_ADLS_Raw_CSV",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "entity": {
+                                            "value": "@item().entity",
+                                            "type": "Expression"
+                                        },
+                                        "load_type": "@item().load_type",
+                                        "run_date": "@formatDateTime(utcNow(),'yyyy-MM-dd')",
+                                        "run_id": "@pipeline().RunId",
+                                        "file_name": "@item().file_name"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ],
+        "parameters": {
+            "tables_config": {
+                "type": "array",
+                "defaultValue": [
+                    {
+                        "source_schema": "source",
+                        "source_table": "users",
+                        "entity": "users",
+                        "load_type": "full",
+                        "file_name": "users.csv"
+                    },
+                    {
+                        "source_schema": "source",
+                        "source_table": "merchants",
+                        "entity": "merchants",
+                        "load_type": "full",
+                        "file_name": "merchants.csv"
+                    },
+                    {
+                        "source_schema": "source",
+                        "source_table": "accounts",
+                        "entity": "accounts",
+                        "load_type": "full",
+                        "file_name": "accounts.csv"
+                    },
+                    {
+                        "source_schema": "source",
+                        "source_table": "devices",
+                        "entity": "devices",
+                        "load_type": "full",
+                        "file_name": "devices.csv"
+                    },
+                    {
+                        "source_schema": "source",
+                        "source_table": "payment_methods",
+                        "entity": "payment_methods",
+                        "load_type": "full",
+                        "file_name": "payment_methods.csv"
+                    },
+                    {
+                        "source_schema": "source",
+                        "source_table": "kyc_records",
+                        "entity": "kyc_records",
+                        "load_type": "full",
+                        "file_name": "kyc_records.csv"
+                    },
+                    {
+                        "source_schema": "source",
+                        "source_table": "transactions",
+                        "entity": "transactions",
+                        "load_type": "full",
+                        "file_name": "transactions.csv"
+                    }
+                ]
+            }
+        },
+        "annotations": []
+    }
+}

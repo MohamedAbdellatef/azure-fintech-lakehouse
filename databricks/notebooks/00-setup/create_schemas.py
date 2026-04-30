@@ -4,6 +4,7 @@
 # MAGIC
 # MAGIC Run this notebook after `mount_adls.py`.
 # MAGIC It creates Bronze, Silver, Gold, and Audit databases with explicit locations.
+# MAGIC Each schema is pinned to its container root: `/mnt/<layer>/`.
 
 # COMMAND ----------
 
@@ -77,10 +78,17 @@ for db_name in databases:
 
 # COMMAND ----------
 
-spark.sql("SHOW DATABASES").show(truncate=False)
+for db_name in databases:
+    target_db = db_ref(db_name)
+    details_df = spark.sql(f"DESCRIBE DATABASE EXTENDED {target_db}")
+    location_row = (
+        details_df
+        .filter("database_description_item = 'Location'")
+        .select("database_description_value")
+        .first()
+    )
+    actual_location = location_row["database_description_value"] if location_row else "UNKNOWN"
+    print(f"{target_db}: location={actual_location}")
 
-if show_tables:
-    for db_name in databases:
-        target_db = db_ref(db_name)
-        count_tables = spark.sql(f"SHOW TABLES IN {target_db}").count()
-        print(f"{target_db}: {count_tables} tables")
+    if show_tables:
+        spark.sql(f"SHOW TABLES IN {target_db}").show(truncate=False)

@@ -14,11 +14,15 @@
 
 dbutils.widgets.text("storage_account", "stfintechlakehousedev", "ADLS Storage Account")
 dbutils.widgets.text("secret_scope", "fintech-scope", "Databricks Secret Scope")
+dbutils.widgets.text("client_id_secret_key", "sp-client-id", "Client ID Secret Key")
+dbutils.widgets.text("client_secret_secret_key", "sp-client-secret", "Client Secret Key")
 dbutils.widgets.text("tenant_secret_key", "tenant-id", "Tenant Secret Key")
 dbutils.widgets.dropdown("force_remount", "false", ["false", "true"], "Force Remount")
 
 storage_account = dbutils.widgets.get("storage_account").strip()
 secret_scope = dbutils.widgets.get("secret_scope").strip()
+client_id_secret_key = dbutils.widgets.get("client_id_secret_key").strip()
+client_secret_secret_key = dbutils.widgets.get("client_secret_secret_key").strip()
 tenant_secret_key = dbutils.widgets.get("tenant_secret_key").strip()
 force_remount = dbutils.widgets.get("force_remount").strip().lower() == "true"
 
@@ -26,6 +30,10 @@ if not storage_account:
     raise ValueError("Widget 'storage_account' cannot be empty.")
 if not secret_scope:
     raise ValueError("Widget 'secret_scope' cannot be empty.")
+if not client_id_secret_key:
+    raise ValueError("Widget 'client_id_secret_key' cannot be empty.")
+if not client_secret_secret_key:
+    raise ValueError("Widget 'client_secret_secret_key' cannot be empty.")
 if not tenant_secret_key:
     raise ValueError("Widget 'tenant_secret_key' cannot be empty.")
 
@@ -39,8 +47,8 @@ def read_secret(key: str) -> str:
         raise RuntimeError(f"Missing secret '{key}' in scope '{secret_scope}'.") from exc
 
 
-client_id = read_secret("sp-client-id")
-client_secret = read_secret("sp-client-secret")
+client_id = read_secret(client_id_secret_key)
+client_secret = read_secret(client_secret_secret_key)
 tenant_id = read_secret(tenant_secret_key)
 
 oauth_configs = {
@@ -78,11 +86,17 @@ for container in containers:
         dbutils.fs.unmount(mount_point)
 
     print(f"Mounting {source_uri} -> {mount_point}")
-    dbutils.fs.mount(
-        source=source_uri,
-        mount_point=mount_point,
-        extra_configs=oauth_configs,
-    )
+    try:
+        dbutils.fs.mount(
+            source=source_uri,
+            mount_point=mount_point,
+            extra_configs=oauth_configs,
+        )
+    except Exception as exc:
+        raise RuntimeError(
+            f"Failed to mount container '{container}' at '{mount_point}'. "
+            "Earlier mounts in this run may already be in place."
+        ) from exc
 
 dbutils.fs.refreshMounts()
 print("Mount operation completed.")
