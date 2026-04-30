@@ -1,0 +1,30 @@
+{
+    "name": "DS_PG_Source_Table",
+    "properties": {
+        "linkedServiceName": {
+            "referenceName": "LS_PostgreSQL_FintechSource",
+            "type": "LinkedServiceReference"
+        },
+        "parameters": {
+            "schema": {
+                "type": "string"
+            },
+            "table": {
+                "type": "string"
+            }
+        },
+        "annotations": [],
+        "type": "AzurePostgreSqlTable",
+        "schema": [],
+        "typeProperties": {
+            "schema": {
+                "value": "@dataset().schema",
+                "type": "Expression"
+            },
+            "table": {
+                "value": "@dataset().table",
+                "type": "Expression"
+            }
+        }
+    }
+}

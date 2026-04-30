@@ -1,0 +1,11 @@
+{
+    "name": "LS_ADLS_RawLanding",
+    "type": "Microsoft.DataFactory/factories/linkedservices",
+    "properties": {
+        "annotations": [],
+        "type": "AzureBlobFS",
+        "typeProperties": {
+            "url": "https://<storage-account-name>.dfs.core.windows.net/"
+        }
+    }
+}

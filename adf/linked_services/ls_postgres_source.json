@@ -1,0 +1,18 @@
+{
+    "name": "LS_PostgreSQL_FintechSource",
+    "type": "Microsoft.DataFactory/factories/linkedservices",
+    "properties": {
+        "annotations": [],
+        "type": "AzurePostgreSql",
+        "version": "2.0",
+        "typeProperties": {
+            "server": "<postgres-server-name>.postgres.database.azure.com",
+            "port": "5432",
+            "database": "fintech_oltp",
+            "sslMode": 3,
+            "username": "<postgres-username>",
+            "authenticationType": "Basic",
+            "encryptedCredential": "<redacted>"
+        }
+    }
+}
